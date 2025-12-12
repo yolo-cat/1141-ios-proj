@@ -25,13 +25,24 @@
   - History 以 Swift Charts 繪製最近資料折線
 
 ## 快速起手指令（可直接貼給 Agent）
-- Supabase SQL：見 `stage_1_prompt.md` 中的建表與 RLS 啟動指令。
-- ESP32 範本：`stage_1_prompt.md` 提供 Wi-Fi 連線、DHT11 讀取、HTTP POST 至 Supabase 的範例提示。
-- iOS ViewModel：`stage_1_prompt.md` 提供 `SensorViewModel`（Realtime 訂閱 + 歷史資料抓取）的範例提示。
+- Supabase SQL：
+  > "I am building an IoT project with Supabase. Please generate the SQL to create a table named `readings` with columns: id (int8, PK), created_at (timestamptz), device_id (text), temperature (float), humidity (float). Also, provide the SQL to enable RLS and allow public inserts but only authenticated selects."
+- ESP32 範本：
+  > "Write an Arduino sketch for ESP32 with DHT11 connected to GPIO 15. It needs to connect to WiFi, read sensor data every 10 seconds, and POST a JSON payload `{'device_id': 'demo_1', 'temperature': ..., 'humidity': ...}` to a Supabase REST API endpoint. Use `HTTPClient` and `ArduinoJson`. Handle WiFi reconnection."
+- iOS ViewModel：
+  > "Create a SwiftUI ViewModel named `SensorViewModel` using the `supabase-swift` SDK. It should have a published property `currentReading`. It needs a function to subscribe to Realtime INSERT events on the `readings` table and update `currentReading` automatically. Also, include a function to fetch the last 100 rows for a history chart."
 
 ## 目錄建議（節錄自 PRD）
 - `TeaMonitorApp/`
   - `Models/`
+    - `Reading.swift`（與 DB schema 對應）
   - `ViewModels/`
+    - `AuthViewModel.swift`
+    - `SensorViewModel.swift`
   - `Views/`
+    - `LoginView.swift`
+    - `DashboardView.swift`
+    - `HistoryChartView.swift`
   - `Managers/`
+    - `SupabaseManager.swift`
+  - `TeaMonitorApp.swift`
