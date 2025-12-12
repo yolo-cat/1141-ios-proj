@@ -1,9 +1,10 @@
 # AI Coding Agent 指南（階段一）
 
-本檔案提供 AI Coding Agent 在本倉庫執行工作的快速入口，內容來源為 `stage_1_prd.md` 與 `stage_1_prompt.md`。
+本檔案提供 AI Coding Agent 在本倉庫執行工作的快速入口，內容來源為 `PRD_STAGE1.md`、 `TASKS_STAGE1.md`，以及補充的 `stage_1_prompt.md`。
 
 ## 關鍵文件
-- [stage_1_prd.md](stage_1_prd.md)：完整 PRD，涵蓋硬體、後端、iOS App 功能需求與資料表結構。
+- [PRD_STAGE1.md](PRD_STAGE1.md)：完整 PRD，涵蓋硬體、後端、iOS App 功能需求與資料表結構。
+- [TASKS_STAGE1.md](TASKS_STAGE1.md)：跨子專案的任務指引與入口鏈結。
 - [stage_1_prompt.md](stage_1_prompt.md)：可直接貼給 AI Agent 的啟動指令範例。
 
 ## PRD 摘要

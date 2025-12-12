@@ -1,6 +1,6 @@
 # ESP32 Agent 指南（Stage 1）
 
-本指引協助 AI Agent 以最小改動完成 ESP32 韌體的 stage-1 開發，需與根目錄 `AGENTS.md` 與 `stage_1_prd.md` 保持一致，任一文件更新時請同步檢查本檔與 `DEV_STEPS.md`。
+本指引協助 AI Agent 以最小改動完成 ESP32 韌體的 stage-1 開發，需與根目錄 `AGENTS.md` 與 `PRD_STAGE1.md` 保持一致（摘要見 `PRD_ESP32_STAGE_1.md`），任一文件更新時請同步檢查本檔與 `TASKS_ESP32_STAGE_1.md`。
 
 ## 任務目標
 - 以 ESP32 + DHT11（GPIO 15）讀取溫溼度，並透過 Supabase REST API 上傳。
