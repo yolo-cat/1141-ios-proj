@@ -2,7 +2,7 @@
 
 速查清單：依 PRD 建立 `readings` 表、設定 RLS、完成 REST 驗證。
 
-1. 讀 `supabase/AGENTS.md`、 `stage_1_prd.md`，確認 schema/RLS 要求。
+1. 讀 `supabase/AGENTS.md`、`../PRD_STAGE1.md`（摘要於 `PRD_SUPABASE_STAGE_1.md`），確認 schema/RLS 要求。
 2. 取得 `project ref`、`anon key`、`authenticated access token`（用於 SELECT 驗證）。
 3. 在 Supabase SQL Editor / CLI 執行：
   ```sql

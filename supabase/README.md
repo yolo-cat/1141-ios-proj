@@ -1,6 +1,6 @@
 # Supabase README（階段一）
 
-目標：依 `supabase/AGENTS.md`、 `stage_1_prd.md` 建立 `readings` 表並設定 RLS。`supabase/TASKS.md` 提供速查清單，本 README 保留指令範例。
+目標：依 `supabase/AGENTS.md`、`../PRD_STAGE1.md`（摘要於 `PRD_SUPABASE_STAGE_1.md`）建立 `readings` 表並設定 RLS。`supabase/TASKS_SUPABASE_STAGE_1.md` 提供速查清單，本 README 保留指令範例。
 
 ## 極簡步驟
 1) 取得 `project ref`、`anon key`、`authenticated access token`。  

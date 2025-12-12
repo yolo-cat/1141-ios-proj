@@ -1,9 +1,9 @@
 # iOS 開發指引（Stage 1）
 
-TeaWarehouse-MVP iOS 端採用 SwiftUI + MVVM，資料源來自 Supabase。閱讀此檔前，請先掌握根目錄的 `AGENTS.md` 與 `stage_1_prd.md`。
+TeaWarehouse-MVP iOS 端採用 SwiftUI + MVVM，資料源來自 Supabase。閱讀此檔前，請先掌握根目錄的 `AGENTS.md` 與 `PRD_STAGE1.md`（摘要於 `PRD_IOS_STAGE_1.md`）。
 
 ## 依據
-- PRD：[`../stage_1_prd.md`](../stage_1_prd.md)（資料表 `readings`、Auth、Realtime、History 圖表）
+- PRD：[`../PRD_STAGE1.md`](../PRD_STAGE1.md)（資料表 `readings`、Auth、Realtime、History 圖表）
 - Prompt 範本：[`../stage_1_prompt.md`](../stage_1_prompt.md) 的 iOS 指令區段
 
 ## 原則
