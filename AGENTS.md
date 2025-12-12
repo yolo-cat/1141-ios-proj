@@ -3,8 +3,8 @@
 本檔案提供 AI Coding Agent 在本倉庫執行工作的快速入口，內容來源為 `stage_1_prd.md` 與 `stage_1_prompt.md`。
 
 ## 關鍵文件
-- [stage_1_prd.md](../stage_1_prd.md)：完整 PRD，涵蓋硬體、後端、iOS App 功能需求與資料表結構。
-- [stage_1_prompt.md](../stage_1_prompt.md)：可直接貼給 AI Agent 的啟動指令範例。
+- [stage_1_prd.md](stage_1_prd.md)：完整 PRD，涵蓋硬體、後端、iOS App 功能需求與資料表結構。
+- [stage_1_prompt.md](stage_1_prompt.md)：可直接貼給 AI Agent 的啟動指令範例。
 
 ## PRD 摘要
 - 專案：普洱茶倉環境監控系統（TeaWarehouse-MVP），重點在即時性、原生 iOS 體驗、資料視覺化。
@@ -33,17 +33,7 @@
   > "Create a SwiftUI ViewModel named `SensorViewModel` using the `supabase-swift` SDK. It should have a published property `currentReading`. It needs a function to subscribe to Realtime INSERT events on the `readings` table and update `currentReading` automatically. Also, include a function to fetch the last 100 rows for a history chart."
 - 註：原始 `stage_1_prompt.md` 將溫濕度欄位標示為 `float`，此處已改為 PRD 規範的 `float4`。
 
-## 目錄建議（節錄自 PRD）
-- `TeaMonitorApp/`
-  - `Models/`
-    - `Reading.swift`（與 DB schema 對應）
-  - `ViewModels/`
-    - `AuthViewModel.swift`
-    - `SensorViewModel.swift`
-  - `Views/`
-    - `LoginView.swift`
-    - `DashboardView.swift`
-    - `HistoryChartView.swift`
-  - `Managers/`
-    - `SupabaseManager.swift`
-  - `TeaMonitorApp.swift`
+## Monorepo 架構
+- `supabase/`：SQL、migration、設定
+- `esp32/`：Arduino 韌體（目前草稿：`arduino_draft.ino`）
+- `ios/`：SwiftUI App 程式碼
