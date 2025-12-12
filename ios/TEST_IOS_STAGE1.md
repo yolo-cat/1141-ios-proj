@@ -11,12 +11,12 @@ TeaWarehouse-MVP iOS（Stage 1）測試方案，涵蓋 PRD 需求：Auth、Dashb
 ## 測試類型
 1) **單元測試**
    - SupabaseManager：初始化與 session 保存
-   - AuthViewModel：`signIn`/`signUp` 流程、錯誤回報、session 缓存/清除
+   - AuthViewModel：`signIn`/`signUp` 流程、錯誤回報、session 緩存/清除
    - SensorViewModel：Realtime 訂閱 callback 更新 `currentReading`，歷史查詢封裝（筆數上限/排序）
 2) **整合測試**
    - 以 mock Supabase client 驗證 Realtime 訂閱收到 `INSERT` 後 UI 狀態更新
    - 歷史查詢結果可轉為 Chart 所需的雙折線資料序列
-3) **UI/手動回歸**
+3) **UI/手動回歸測試**
    - LoginView：登入/註冊流程與錯誤訊息
    - DashboardView：最新讀數卡片即時跳動，溫度>30 或濕度>70 時觸發 haptic/本地通知
    - HistoryChartView：折線顯示最近 N 筆數據，空資料時呈現 placeholder

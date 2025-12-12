@@ -15,8 +15,8 @@ final class SensorViewModelTests: XCTestCase {
     func testHistoryQueryRespectsLimitAndSorting() throws {
         throw XCTSkip("移除跳過並注入 mock Supabase query 後啟用此測試。")
         // Arrange: mock 回傳超過上限的亂序資料
-        // Act: 呼叫 fetchHistory(limit:)，預設 100/288
-        // Assert: 回傳筆數不超過上限且依 created_at 升冪排列
+        // Act: 調用 fetchHistory(limit:)，預設 100/288
+        // Assert: 回傳筆數不超過上限且依 created_at 升序排列
     }
 
     func testAlertTriggersWhenThresholdExceeded() throws {

@@ -9,7 +9,7 @@ final class AuthViewModelTests: XCTestCase {
         throw XCTSkip("移除跳過並連接實際或 mock Supabase client 後啟用此測試。")
         // Arrange: 建立帶有假登入回應的 SupabaseClient mock
         // Act: 呼叫 signIn(email:password:) 並等待 completion
-        // Assert: session 不為 nil，狀態為已登入，錯誤為 nil
+        // Assert: session 不為 nil，狀態為已登入，錯誤為 nil。
     }
 
     func testSignUpFailureReturnsError() throws {
