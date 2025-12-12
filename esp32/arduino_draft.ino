@@ -58,9 +58,13 @@ void runPayloadSelfTest() {
                      : "[self-test] payload fields missing");
 }
 
+bool isValidReading(const TempAndHumidity &data) {
+  return !isnan(data.temperature) && !isnan(data.humidity);
+}
+
 bool readSensor(float &temperature, float &humidity) {
   TempAndHumidity data = dht.getTempAndHumidity();
-  if (isnan(data.temperature) || isnan(data.humidity)) {
+  if (!isValidReading(data)) {
     Serial.println("NaN reading detected, skip upload");
     return false;
   }
@@ -72,7 +76,7 @@ bool readSensor(float &temperature, float &humidity) {
 
 bool postReading(float temperature, float humidity) {
   WiFiClientSecure client;
-  if (strlen_P(SUPABASE_ROOT_CA) > 0) {
+  if (pgm_read_byte(SUPABASE_ROOT_CA) != 0) {
     client.setCACert_P(SUPABASE_ROOT_CA);
   } else if (ALLOW_INSECURE_TLS) {
     client.setInsecure(); // dev-only fallback
@@ -124,7 +128,7 @@ void loop() {
   unsigned long interval = DEMO_MODE ? DEMO_INTERVAL_MS : STANDARD_INTERVAL_MS;
 
   if (now - lastReadingAt < interval) {
-    delay(10);
+    delay(1);
     return;
   }
   lastReadingAt = now;

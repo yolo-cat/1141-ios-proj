@@ -39,8 +39,9 @@ private final class StubAuthService {
 
     func signIn(email: String, password: String) throws -> String {
         if shouldFail { throw StubAuthError.invalid }
-        storedSession = "session-\(email)"
-        return storedSession!
+        let session = "session-\(email)"
+        storedSession = session
+        return session
     }
 
     func signOut() {
