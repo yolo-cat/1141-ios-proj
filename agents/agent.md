@@ -1,4 +1,4 @@
-# AI Coding Agent 指南（Stage 1）
+# AI Coding Agent 指南（階段一）
 
 本檔案提供 AI Coding Agent 在本倉庫執行工作的快速入口，內容來源為 `stage_1_prd.md` 與 `stage_1_prompt.md`。
 
@@ -29,5 +29,9 @@
 - ESP32 範本：`stage_1_prompt.md` 提供 Wi-Fi 連線、DHT11 讀取、HTTP POST 至 Supabase 的範例提示。
 - iOS ViewModel：`stage_1_prompt.md` 提供 `SensorViewModel`（Realtime 訂閱 + 歷史資料抓取）的範例提示。
 
-## 目錄建議（參考）
-未來若擴充程式碼，可依 PRD 附錄建議的結構建立 `TeaMonitorApp/` 底下的 Models、ViewModels、Views、Managers 目錄。
+## 目錄建議（節錄自 PRD）
+- `TeaMonitorApp/`
+  - `Models/`
+  - `ViewModels/`
+  - `Views/`
+  - `Managers/`
