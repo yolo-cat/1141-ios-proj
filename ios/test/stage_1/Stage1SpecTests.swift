@@ -24,10 +24,9 @@ private final class SensorViewModelSpecDouble {
     }
 
     func fetchHistory(limit: Int) -> [Reading] {
-        history
+        Array(history
             .sorted { $0.createdAt > $1.createdAt }
-            .prefix(limit)
-            .map { $0 }
+            .prefix(limit))
     }
 }
 

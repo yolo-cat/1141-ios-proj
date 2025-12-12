@@ -76,7 +76,8 @@ bool readSensor(float &temperature, float &humidity) {
 
 bool postReading(float temperature, float humidity) {
   WiFiClientSecure client;
-  if (pgm_read_byte(SUPABASE_ROOT_CA) != 0) {
+  size_t caLen = strlen_P(SUPABASE_ROOT_CA);
+  if (caLen > 0) {
     client.setCACert_P(SUPABASE_ROOT_CA);
   } else if (ALLOW_INSECURE_TLS) {
     client.setInsecure(); // dev-only fallback
@@ -128,7 +129,6 @@ void loop() {
   unsigned long interval = DEMO_MODE ? DEMO_INTERVAL_MS : STANDARD_INTERVAL_MS;
 
   if (now - lastReadingAt < interval) {
-    delay(1);
     return;
   }
   lastReadingAt = now;
