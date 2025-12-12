@@ -2,7 +2,7 @@ import Foundation
 import XCTest
 
 /// Lightweight specification tests for Stage-1 behaviors.
-/// These doubles enable TDD before 實際 ViewModel/Service 實作完成。
+/// These doubles enable TDD before real ViewModel/Service implementations exist.
 
 private struct Reading: Equatable {
     let id: Int

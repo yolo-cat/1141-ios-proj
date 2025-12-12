@@ -12,6 +12,7 @@ const bool DEMO_MODE = true; // Demo: 10s；Standard: 5 minutes
 const unsigned long STANDARD_INTERVAL_MS = 5UL * 60UL * 1000UL;
 const unsigned long DEMO_INTERVAL_MS = 10UL * 1000UL;
 const bool RUN_PAYLOAD_SELF_TEST = true; // offline check for payload shape
+const bool ALLOW_INSECURE_TLS = false;  // set true only for local debugging
 
 DHTesp dht;
 unsigned long lastReadingAt = 0;
@@ -71,7 +72,14 @@ bool readSensor(float &temperature, float &humidity) {
 
 bool postReading(float temperature, float humidity) {
   WiFiClientSecure client;
-  client.setInsecure(); // simplify cert handling for Supabase HTTPS
+  if (strlen_P(SUPABASE_ROOT_CA) > 0) {
+    client.setCACert_P(SUPABASE_ROOT_CA);
+  } else if (ALLOW_INSECURE_TLS) {
+    client.setInsecure(); // dev-only fallback
+  } else {
+    Serial.println("Skip upload: missing Supabase root CA (set ALLOW_INSECURE_TLS=true for dev)");
+    return false;
+  }
 
   HTTPClient http;
   if (!http.begin(client, supabaseEndpoint)) {
@@ -129,8 +137,8 @@ void loop() {
     }
   }
 
-  float temperature = NAN;
-  float humidity = NAN;
+  float temperature = 0.0f;
+  float humidity = 0.0f;
   if (!readSensor(temperature, humidity)) {
     return;
   }
