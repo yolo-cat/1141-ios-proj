@@ -6,14 +6,6 @@
 
 #include "secrets.h"
 
-#ifndef SUPABASE_ROOT_CA
-const char SUPABASE_ROOT_CA[] PROGMEM = "";
-#endif
-
-#ifndef ALLOW_INSECURE_TLS
-const bool ALLOW_INSECURE_TLS = false;
-#endif
-
 const int DHT_PIN = 15;
 const bool DEMO_MODE = false;
 const unsigned long STANDARD_INTERVAL_MS = 5UL * 60UL * 1000UL;
@@ -25,7 +17,7 @@ unsigned long lastSendMs = 0;
 
 void configureTls() {
     secureClient.setTimeout(15000);
-    if (strlen(SUPABASE_ROOT_CA) > 0) {
+    if (SUPABASE_ROOT_CA[0] != '\0') {
         secureClient.setCACert(SUPABASE_ROOT_CA);
         Serial.println("TLS: using provided root CA.");
     } else if (ALLOW_INSECURE_TLS) {
@@ -139,8 +131,8 @@ void loop() {
 
     if (now - lastSendMs >= interval) {
         lastSendMs = now;
-        float temperature = NAN;
-        float humidity = NAN;
+        float temperature;
+        float humidity;
 
         if (readSensor(temperature, humidity)) {
             postReading(temperature, humidity);
