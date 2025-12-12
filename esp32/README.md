@@ -7,3 +7,4 @@ Stage-1 firmware workspace for sending DHT11 readings to Supabase.
 - 可執行步驟：`TASKS_ESP32_STAGE_1.md`（GPIO 15、5 分鐘周期，Demo 10 秒）。
 - 草稿範例：`arduino_draft.ino`。
 - 機密範本：`secrets.h.template`（自建 `secrets.h` 並加入 `.gitignore`）。
+- 測試方案：`TEST_ESP32_STAGE1.md`（TDD scaffold 於 `test/stage_1/`）。
