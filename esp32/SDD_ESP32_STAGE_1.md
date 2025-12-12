@@ -24,7 +24,7 @@ Stage 1 軟體設計說明（SDD）。需求來源：`PRD_ESP32_STAGE_1.md` / `P
 - 硬體與 HTTP 實作需以序列埠與 Supabase 表驗證，測試檔不模擬 Wi-Fi/DHT/HTTP。
 
 ## 完成度現況（本次迭代）
-- 測試方案與邏輯測試腳本：**已提供**（`TEST_ESP32_STAGE1.md`、`test/stage_1`）。未執行實測。
+- 測試方案與邏輯測試腳本：**已提供**（`TEST_ESP32_STAGE1.md`、`test/stage_1/test_stage1.cpp`）。未執行實測。
 - 韌體主程式：**未符合 Stage 1**（`arduino_draft.ino` 為 Blynk 範例，尚未改寫成 Supabase 版）。
 - 待辦：依上述模組落地 Wi-Fi/DHT/HTTP 流程，串接邏輯層函式並以序列埠 + Supabase 表實測。
 
@@ -32,4 +32,4 @@ Stage 1 軟體設計說明（SDD）。需求來源：`PRD_ESP32_STAGE_1.md` / `P
 - 需求：`PRD_ESP32_STAGE_1.md`
 - 設計：`DESIGN_ESP32_STAGE_1.md`
 - 任務：`TASKS_ESP32_STAGE_1.md`
-- 測試：`TEST_ESP32_STAGE1.md`、`test/stage_1/`
+- 測試：`TEST_ESP32_STAGE1.md`、`test/stage_1/test_stage1.cpp`
