@@ -85,9 +85,10 @@ final class Stage1SpecTests: XCTestCase {
     func testHistoryIsSortedAndTruncated() {
         let vm = SensorViewModelSpecDouble()
         let now = Date()
+        let intervalStep: TimeInterval = 5.0
         vm.history = (0..<5).map { idx in
             Reading(id: idx,
-                    createdAt: now.addingTimeInterval(Double(idx) * 5.0),
+                    createdAt: now.addingTimeInterval(Double(idx) * intervalStep),
                     deviceId: "tea_room_01",
                     temperature: 20 + Float(idx),
                     humidity: 50 + Float(idx))

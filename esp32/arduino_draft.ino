@@ -9,9 +9,9 @@
 
 const int DHT_PIN = 15;
 const bool DEMO_MODE = true; // Demo: 10s；Standard: 5 minutes
-const unsigned long STANDARD_INTERVAL_MS = 5UL * 60UL * 1000UL;
-const unsigned long DEMO_INTERVAL_MS = 10UL * 1000UL;
-const bool RUN_PAYLOAD_SELF_TEST = true; // offline check for payload shape
+const unsigned long STANDARD_UPLOAD_INTERVAL_MS = 5UL * 60UL * 1000UL;
+const unsigned long DEMO_UPLOAD_INTERVAL_MS = 10UL * 1000UL;
+const bool RUN_PAYLOAD_SELF_TEST = false; // enable for dev-only payload shape check
 const bool ALLOW_INSECURE_TLS = false;  // set true only for local debugging
 
 DHTesp dht;
@@ -76,7 +76,8 @@ bool readSensor(float &temperature, float &humidity) {
 
 bool postReading(float temperature, float humidity) {
   WiFiClientSecure client;
-  bool hasRootCA = SUPABASE_ROOT_CA != nullptr && pgm_read_byte(SUPABASE_ROOT_CA) != 0;
+  size_t caLen = strlen_P(SUPABASE_ROOT_CA);
+  bool hasRootCA = caLen > 0;
   if (hasRootCA) {
     client.setCACert_P(SUPABASE_ROOT_CA);
   } else if (ALLOW_INSECURE_TLS) {
@@ -126,7 +127,7 @@ void setup() {
 
 void loop() {
   unsigned long now = millis();
-  unsigned long interval = DEMO_MODE ? DEMO_INTERVAL_MS : STANDARD_INTERVAL_MS;
+  unsigned long interval = DEMO_MODE ? DEMO_UPLOAD_INTERVAL_MS : STANDARD_UPLOAD_INTERVAL_MS;
 
   if (now - lastReadingAt < interval) {
     return;
