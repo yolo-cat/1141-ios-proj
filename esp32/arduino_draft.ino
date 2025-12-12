@@ -14,9 +14,11 @@ const unsigned long DEMO_INTERVAL_MS = 10UL * 1000UL;
 DHTesp dht;
 WiFiClientSecure secureClient;
 unsigned long lastSendMs = 0;
+bool tlsReady = true;
 
 void configureTls() {
     secureClient.setTimeout(15000);
+    tlsReady = true;
     if (strlen(SUPABASE_ROOT_CA) > 0) {
         secureClient.setCACert(SUPABASE_ROOT_CA);
         Serial.println("TLS: using provided root CA.");
@@ -25,6 +27,7 @@ void configureTls() {
         Serial.println("TLS: WARNING using insecure mode (no certificate validation).");
     } else {
         Serial.println("TLS: no root CA configured; set SUPABASE_ROOT_CA or enable ALLOW_INSECURE_TLS for testing.");
+        tlsReady = false;
     }
 }
 
@@ -38,7 +41,7 @@ void connectWiFi() {
     WiFi.persistent(false);
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
-    Serial.printf("Connecting to Wi-Fi SSID: %s\n", WIFI_SSID);
+    Serial.println("Connecting to Wi-Fi...");
     int retries = 0;
     while (WiFi.status() != WL_CONNECTED && retries < 40) {
         delay(250);
@@ -78,6 +81,10 @@ bool readSensor(float &temperature, float &humidity) {
 bool postReading(float temperature, float humidity) {
     if (WiFi.status() != WL_CONNECTED) {
         Serial.println("Cannot POST: Wi-Fi not connected.");
+        return false;
+    }
+    if (!tlsReady) {
+        Serial.println("Cannot POST: TLS is not configured. Add SUPABASE_ROOT_CA or enable ALLOW_INSECURE_TLS.");
         return false;
     }
 
@@ -120,6 +127,7 @@ void setup() {
     connectWiFi();
 
     unsigned long firstInterval = DEMO_MODE ? DEMO_INTERVAL_MS : STANDARD_INTERVAL_MS;
+    // Start with an immediate reading by backdating the last send timestamp.
     lastSendMs = millis() - firstInterval;
 }
 
