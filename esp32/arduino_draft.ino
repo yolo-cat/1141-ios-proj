@@ -6,10 +6,12 @@
 
 #include "secrets.h"
 
-const int DHT_PIN = 15;
-const bool DEMO_MODE = false;
-const unsigned long STANDARD_INTERVAL_MS = 5UL * 60UL * 1000UL;
-const unsigned long DEMO_INTERVAL_MS = 10UL * 1000UL;
+constexpr int DHT_PIN = 15;
+constexpr bool DEMO_MODE = false;
+constexpr unsigned long STANDARD_INTERVAL_MS = 5UL * 60UL * 1000UL;
+constexpr unsigned long DEMO_INTERVAL_MS = 10UL * 1000UL;
+constexpr unsigned long HTTP_TIMEOUT_MS = 15000;
+constexpr int WIFI_MAX_RETRIES = 40;
 
 DHTesp dht;
 WiFiClientSecure secureClient;
@@ -18,9 +20,9 @@ bool tlsReady = true;
 bool firstSend = true;
 
 void configureTls() {
-    secureClient.setTimeout(15000);
+    secureClient.setTimeout(HTTP_TIMEOUT_MS);
     tlsReady = true;
-    if (strlen(SUPABASE_ROOT_CA) > 0) {
+    if (SUPABASE_ROOT_CA[0] != '\0') {
         secureClient.setCACert(SUPABASE_ROOT_CA);
         Serial.println("TLS: using provided root CA.");
     } else if (ALLOW_INSECURE_TLS) {
@@ -44,7 +46,7 @@ void connectWiFi() {
 
     Serial.println("Connecting to Wi-Fi...");
     int retries = 0;
-    while (WiFi.status() != WL_CONNECTED && retries < 40) {
+    while (WiFi.status() != WL_CONNECTED && retries < WIFI_MAX_RETRIES) {
         delay(250);
         Serial.print(".");
         retries++;
