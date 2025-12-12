@@ -13,7 +13,7 @@
 
 ## 產出與存放
 - SQL / migration 檔案存放於 `supabase/` 目錄。
-- 開發步驟文檔需同步更新（使用 `supabase/README.md`），說明如何套用 schema 與策略。
+- 開發步驟文檔需同步更新（`supabase/README.md`、`supabase/TASKS.md`），說明如何套用 schema 與策略。
 
 ## 作業原則
 - 一切以 PRD（`stage_1_prd.md`）與根目錄 `AGENTS.md` 為準，不自行變更欄位型別（溫濕度皆用 `float4`）。
