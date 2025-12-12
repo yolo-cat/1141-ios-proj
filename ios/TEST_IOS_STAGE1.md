@@ -43,3 +43,4 @@ TeaWarehouse-MVP iOS（Stage 1）測試方案，涵蓋 PRD 需求：Auth、Dashb
 - [ ] History：查詢排序後的最近 N 筆資料餵給 Swift Charts
 - [ ] Alert：超標震動/通知與節流
 - [ ] 文件：測試計畫、TDD 流程、執行指引已更新
+- [x] 骨架：SwiftUI + MVVM 目錄與程式碼骨架已建立（`App/` 目錄）
