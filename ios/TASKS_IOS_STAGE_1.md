@@ -1,6 +1,6 @@
 # iOS Stage-1 實作步驟 (Implementation Steps)
 
-本指引依據 `ios/AGENTS.md` 與 `../stage_1_prd.md`，將工作拆解為可立即執行的動作。
+本指引依據 `ios/AGENTS.md` 與 `../PRD_STAGE1.md`（摘要於 `PRD_IOS_STAGE_1.md`），將工作拆解為可立即執行的動作。
 
 1. **初始化專案**
    - 建立 SwiftUI App 專案（iOS 17+，Swift 5.9+），建立資料夾 `Models/`, `ViewModels/`, `Views/`, `Managers/`.
