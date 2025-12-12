@@ -1,9 +1,10 @@
 #include <cmath>
 #include <cstdio>
 #include <string>
+#include <vector>
 #include "unity.h"
 
-static const std::string kDeviceId = "tea_room_01";
+static const std::string kDeviceId = "test_device_01";
 
 bool isValidReading(float temperature, float humidity) {
     return !std::isnan(temperature) && !std::isnan(humidity);
@@ -14,15 +15,25 @@ unsigned long intervalMs(bool demoMode) {
 }
 
 std::string buildPayload(const std::string &deviceId, float temperature, float humidity) {
-    char buffer[128];
-    std::snprintf(
-        buffer,
-        sizeof(buffer),
+    const int required = std::snprintf(
+        nullptr,
+        0,
         "{\"device_id\":\"%s\",\"temperature\":%.2f,\"humidity\":%.2f}",
         deviceId.c_str(),
         static_cast<double>(temperature),
         static_cast<double>(humidity));
-    return std::string(buffer);
+    if (required < 0) {
+        return {};
+    }
+    std::vector<char> buffer(static_cast<std::size_t>(required) + 1);
+    std::snprintf(
+        buffer.data(),
+        buffer.size(),
+        "{\"device_id\":\"%s\",\"temperature\":%.2f,\"humidity\":%.2f}",
+        deviceId.c_str(),
+        static_cast<double>(temperature),
+        static_cast<double>(humidity));
+    return std::string(buffer.data());
 }
 
 bool canUpload(bool wifiConnected, float temperature, float humidity) {
@@ -36,9 +47,10 @@ void test_nan_filtered(void) {
 
 void test_payload_contains_fields(void) {
     const auto payload = buildPayload(kDeviceId, 23.5f, 60.1f);
-    TEST_ASSERT_NOT_EQUAL(std::string::npos, payload.find("\"device_id\":\"tea_room_01\""));
-    TEST_ASSERT_NOT_EQUAL(std::string::npos, payload.find("\"temperature\":23.50"));
-    TEST_ASSERT_NOT_EQUAL(std::string::npos, payload.find("\"humidity\":60.10"));
+    const auto deviceField = std::string("\"device_id\":\"") + kDeviceId + "\"";
+    TEST_ASSERT_TRUE(payload.find(deviceField) != std::string::npos);
+    TEST_ASSERT_TRUE(payload.find("\"temperature\":23.50") != std::string::npos);
+    TEST_ASSERT_TRUE(payload.find("\"humidity\":60.10") != std::string::npos);
 }
 
 void test_interval_modes(void) {
@@ -52,7 +64,7 @@ void test_upload_requirements(void) {
     TEST_ASSERT_FALSE(canUpload(true, NAN, 55.0f));
 }
 
-int main(int argc, char **argv) {
+int main() {
     UNITY_BEGIN();
     RUN_TEST(test_nan_filtered);
     RUN_TEST(test_payload_contains_fields);

@@ -9,7 +9,7 @@ Stage 1 測試方案，聚焦 DHT11 (GPIO 15) 讀值並以 REST POST 上傳到 S
 
 ## 測試環境
 - 硬體：ESP32-WROOM-32E + DHT11（資料腳位接 GPIO 15）。
-- 韌體：Stage 1 草稿/主程式（依 `arduino_draft.ino` 或後續正式檔），以及 `esp32/test/stage_1/` 內的測試腳本（Unity 形式，可用 PlatformIO `pio test` 執行）。
+- 韌體：Stage 1 草稿/主程式（目前 `arduino_draft.ino` 為 Blynk 草稿，需改寫為 Supabase 版本；或使用後續正式檔），以及 `esp32/test/stage_1/` 內的測試腳本（Unity 形式，可用 PlatformIO `pio test` 執行）。
 - 設定：`secrets.h` 內提供 `WIFI_SSID`、`WIFI_PASSWORD`、`SUPABASE_URL`、`SUPABASE_ANON_KEY`。連線到可用 Wi-Fi；Supabase 需已有 `readings` 表與 RLS（anon insert / authenticated select）。
 - 工具：Serial Monitor（115200）、Supabase SQL/Console 觀察 `readings` 表。
 
@@ -29,7 +29,7 @@ Stage 1 測試方案，聚焦 DHT11 (GPIO 15) 讀值並以 REST POST 上傳到 S
 
 ## 自動化測試（Unity 腳本）
 - 位置：`esp32/test/stage_1/test_stage1.cpp`。
-- 內容：檢查 Payload 結構、NaN 濾除、標準/ Demo 週期毫秒值與上傳前條件（需 Wi-Fi & 有效讀值）。可於 PlatformIO 執行 `pio test -e native` 或放置於 Arduino `test` 目錄執行。
+- 內容：檢查 Payload 結構、NaN 濾除、標準/ Demo 週期毫秒值與上傳前條件（需 Wi-Fi & 有效讀值）。可於 PlatformIO 執行 `pio test -e native`（需自備 `platformio.ini`；本倉庫未附）或放置於 Arduino `test` 目錄執行。
 - 覆蓋範圍：不依賴實體 DHT11/HTTP，聚焦純邏輯（TDD 入口）；硬體/雲端行為仍需手動驗證。
 
 ## 完成度檢查（本次開發）
