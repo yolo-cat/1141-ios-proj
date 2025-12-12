@@ -1,147 +1,151 @@
-/*
- * 版本更新註釋:
- * 2024-11-25 v1: 修復 GPIO 4 輸入輸出衝突,實體按鈕改用 GPIO 17,實現虛擬與實體按鈕雙向控制 LED 並同步狀態到 V5 Label
- * 2024-11-25 v2: 修正按鈕邏輯從切換模式改為按住/放開模式,按住時 LED 亮顯示 Button Down,放開時 LED 滅顯示 Button Up
- * 2024-11-25 v3: 加入計數器強制刷新 Blynk Label 顯示,解決 Label 元件不更新問題
- * 2024-11-25 v4: 加入 DHT11 溫濕度感測器,連接 GPIO 32,按鈕按下時更新溫濕度數據到 V0 和 V1
- */
-
-#define BLYNK_PRINT Serial
-#define BLYNK_TEMPLATE_ID "TMPL6IoglQkK7"
-#define BLYNK_TEMPLATE_NAME "Quickstart Template"
-#define BLYNK_AUTH_TOKEN "X12hSrsYVoGdAsrW03_V8ys5YebyvefK"
-
-#include <WiFi.h>
-#include <WiFiClient.h>
-#include <BlynkSimpleEsp32.h>
+#include <ArduinoJson.h>
 #include <DHTesp.h>
+#include <HTTPClient.h>
+#include <WiFi.h>
+#include <WiFiClientSecure.h>
 
-// WiFi authentication details
-char ssid[] = "JoXP10vi";
-char password[] = "0919091821";
+#include "secrets.h"
 
-// GPIO pins
-const int LED_PIN = 4;
-const int BUTTON_PIN = 17;
-const int DHT_PIN = 32;
+#ifndef SUPABASE_ROOT_CA
+const char SUPABASE_ROOT_CA[] PROGMEM = "";
+#endif
 
-// DHT11 sensor
+#ifndef ALLOW_INSECURE_TLS
+const bool ALLOW_INSECURE_TLS = false;
+#endif
+
+const int DHT_PIN = 15;
+const bool DEMO_MODE = false;
+const unsigned long STANDARD_INTERVAL_MS = 5UL * 60UL * 1000UL;
+const unsigned long DEMO_INTERVAL_MS = 10UL * 1000UL;
+
 DHTesp dht;
+WiFiClientSecure secureClient;
+unsigned long lastSendMs = 0;
 
-// LED state
-bool ledState = LOW;
-bool lastButtonState = HIGH;
-int updateCounter = 0;
-
-// Virtual Pin V4 - 虛擬按鈕控制 LED
-BLYNK_WRITE(V4) {
-    int pinValue = param.asInt();
-    ledState = pinValue;
-    digitalWrite(LED_PIN, ledState);
-
-    // 同步狀態到 V5 Label (加入計數器強制刷新)
-    updateCounter++;
-    if(ledState == HIGH) {
-        Blynk.virtualWrite(V5, String("Button Down #") + String(updateCounter));
-
-        // 按鈕按下時讀取並更新 DHT11 數據
-        readAndUpdateDHT();
+void configureTls() {
+    secureClient.setTimeout(15000);
+    if (strlen(SUPABASE_ROOT_CA) > 0) {
+        secureClient.setCACert(SUPABASE_ROOT_CA);
+        Serial.println("TLS: using provided root CA.");
+    } else if (ALLOW_INSECURE_TLS) {
+        secureClient.setInsecure();
+        Serial.println("TLS: WARNING using insecure mode (no certificate validation).");
     } else {
-        Blynk.virtualWrite(V5, String("Button Up #") + String(updateCounter));
+        Serial.println("TLS: no root CA configured; set SUPABASE_ROOT_CA or enable ALLOW_INSECURE_TLS for testing.");
     }
-
-    Serial.print("V4 Button value: ");
-    Serial.println(pinValue);
 }
 
-// 讀取 DHT11 並更新到 Blynk
-void readAndUpdateDHT() {
-    TempAndHumidity data = dht.getTempAndHumidity();
-
-    if (dht.getStatus() == 0) {
-        // 讀取成功
-        float temperature = data.temperature;
-        float humidity = data.humidity;
-
-        // 更新到 Blynk V0 (溫度) 和 V1 (濕度)
-        Blynk.virtualWrite(V0, String("Temperature: ") + String(temperature, 1) + " °C");
-        Blynk.virtualWrite(V1, String("Humidity: ") + String(humidity, 1) + " %");
-
-        Serial.print("Temperature: ");
-        Serial.print(temperature, 1);
-        Serial.print(" °C, Humidity: ");
-        Serial.print(humidity, 1);
-        Serial.println(" %");
-    } else {
-        // 讀取失敗
-        Serial.println("DHT11 read error: " + String(dht.getStatusString()));
-        Blynk.virtualWrite(V0, "Temperature: Error");
-        Blynk.virtualWrite(V1, "Humidity: Error");
+void connectWiFi() {
+    if (WiFi.status() == WL_CONNECTED) {
+        return;
     }
+
+    WiFi.mode(WIFI_STA);
+    WiFi.setAutoReconnect(true);
+    WiFi.persistent(false);
+    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+
+    Serial.printf("Connecting to Wi-Fi SSID: %s\n", WIFI_SSID);
+    int retries = 0;
+    while (WiFi.status() != WL_CONNECTED && retries < 40) {
+        delay(250);
+        Serial.print(".");
+        retries++;
+    }
+    Serial.println();
+
+    if (WiFi.status() == WL_CONNECTED) {
+        Serial.print("Wi-Fi connected, IP: ");
+        Serial.println(WiFi.localIP());
+    } else {
+        Serial.println("Wi-Fi connection failed; will retry.");
+    }
+}
+
+void ensureWiFiConnected() {
+    if (WiFi.status() != WL_CONNECTED) {
+        Serial.println("Wi-Fi disconnected; attempting reconnection.");
+        connectWiFi();
+    }
+}
+
+bool readSensor(float &temperature, float &humidity) {
+    TempAndHumidity data = dht.getTempAndHumidity();
+    if (isnan(data.temperature) || isnan(data.humidity)) {
+        Serial.println("DHT11 reading is NaN; skipping upload.");
+        return false;
+    }
+
+    temperature = data.temperature;
+    humidity = data.humidity;
+    Serial.printf("DHT11 -> temp: %.2f°C, humidity: %.2f%%\n", temperature, humidity);
+    return true;
+}
+
+bool postReading(float temperature, float humidity) {
+    if (WiFi.status() != WL_CONNECTED) {
+        Serial.println("Cannot POST: Wi-Fi not connected.");
+        return false;
+    }
+
+    String url = String(SUPABASE_URL) + "/rest/v1/readings";
+    HTTPClient http;
+    http.begin(secureClient, url);
+    http.addHeader("Content-Type", "application/json");
+    http.addHeader("Prefer", "return=minimal");
+    http.addHeader("apikey", SUPABASE_ANON_KEY);
+    http.addHeader("Authorization", String("Bearer ") + SUPABASE_ANON_KEY);
+
+    StaticJsonDocument<200> payload;
+    payload["device_id"] = DEVICE_ID;
+    payload["temperature"] = temperature;
+    payload["humidity"] = humidity;
+
+    String body;
+    serializeJson(payload, body);
+
+    Serial.printf("POST %s -> %s\n", url.c_str(), body.c_str());
+    int httpStatus = http.POST(body);
+    if (httpStatus > 0) {
+        Serial.printf("HTTP status: %d\n", httpStatus);
+    } else {
+        Serial.printf("HTTP POST failed: %s\n", http.errorToString(httpStatus).c_str());
+    }
+    http.end();
+    return httpStatus > 0 && httpStatus < 300;
 }
 
 void setup() {
     Serial.begin(115200);
-    Blynk.begin(BLYNK_AUTH_TOKEN, ssid, password);
+    delay(200);
+    Serial.println("ESP32 Stage 1: DHT11 to Supabase REST");
 
-    pinMode(LED_PIN, OUTPUT);
-    pinMode(BUTTON_PIN, INPUT_PULLUP);
-    digitalWrite(LED_PIN, LOW);
-
-    // 初始化 DHT11
     dht.setup(DHT_PIN, DHTesp::DHT11);
-    Serial.println("DHT11 initialized on GPIO " + String(DHT_PIN));
+    Serial.printf("DHT11 initialized on GPIO %d\n", DHT_PIN);
 
-    // 初始化 V5 顯示
-    Blynk.virtualWrite(V5, "Button Up #0");
+    configureTls();
+    connectWiFi();
 
-    // 初始化溫濕度顯示
-    Blynk.virtualWrite(V0, "Temperature: --");
-    Blynk.virtualWrite(V1, "Humidity: --");
+    unsigned long firstInterval = DEMO_MODE ? DEMO_INTERVAL_MS : STANDARD_INTERVAL_MS;
+    lastSendMs = millis() - firstInterval;
 }
 
 void loop() {
-    Blynk.run();
-    int button_status = digitalRead(BUTTON_PIN);
+    ensureWiFiConnected();
 
-    // 按鈕狀態改變時更新
-    if(button_status != lastButtonState) {
+    unsigned long interval = DEMO_MODE ? DEMO_INTERVAL_MS : STANDARD_INTERVAL_MS;
+    unsigned long now = millis();
 
-        updateCounter++;
+    if (now - lastSendMs >= interval) {
+        lastSendMs = now;
+        float temperature = NAN;
+        float humidity = NAN;
 
-        if(button_status == LOW) {
-            // 按鈕被按下
-            ledState = HIGH;
-            digitalWrite(LED_PIN, HIGH);
-
-            // 同步到 Blynk V4 虛擬按鈕
-            Blynk.virtualWrite(V4, HIGH);
-
-            // 更新 V5 Label 顯示 (加入計數器強制刷新)
-            Blynk.virtualWrite(V5, String("Button Down #") + String(updateCounter));
-
-            // 讀取並更新 DHT11 數據
-            readAndUpdateDHT();
-
-            Serial.println("Physical button pressed, LED ON");
-
-        } else {
-            // 按鈕被放開
-            ledState = LOW;
-            digitalWrite(LED_PIN, LOW);
-
-            // 同步到 Blynk V4 虛擬按鈕
-            Blynk.virtualWrite(V4, LOW);
-
-            // 更新 V5 Label 顯示 (加入計數器強制刷新)
-            Blynk.virtualWrite(V5, String("Button Up #") + String(updateCounter));
-
-            Serial.println("Physical button released, LED OFF");
+        if (readSensor(temperature, humidity)) {
+            postReading(temperature, humidity);
         }
-
-        lastButtonState = button_status;
-        delay(50); // 消除按鈕彈跳
     }
 
-    delay(10);
+    delay(100);
 }

@@ -12,6 +12,7 @@
 - 感測：使用 `DHTesp` 或等效函式庫，初始化於 `setup()`，錯誤時提供清楚的序列埠輸出。
 - 傳輸：使用 `HTTPClient` + `ArduinoJson`，設定 `Content-Type: application/json` 與 `Prefer: return=minimal`。
 - 安全：不要提交實際的 Wi-Fi / Supabase 金鑰；以占位符或 `secrets.h` (未版本控制) 注入。
+- TLS：優先使用 `SUPABASE_ROOT_CA` 憑證；若需快速測試可將 `ALLOW_INSECURE_TLS=true`，並在日誌中提示為不驗證憑證模式。
 
 ## 交付物
 - 單一草稿/主要 Sketch（`arduino_draft.ino` 或後續正式檔），可切換標準/ Demo 週期。
