@@ -31,6 +31,7 @@
   > "Write an Arduino sketch for ESP32 with DHT11 connected to GPIO 15. It needs to connect to WiFi, read sensor data every 10 seconds, and POST a JSON payload `{'device_id': 'tea_room_01', 'temperature': ..., 'humidity': ...}` to a Supabase REST API endpoint. Use `HTTPClient` and `ArduinoJson`. Handle WiFi reconnection."
 - iOS ViewModel：
   > "Create a SwiftUI ViewModel named `SensorViewModel` using the `supabase-swift` SDK. It should have a published property `currentReading`. It needs a function to subscribe to Realtime INSERT events on the `readings` table and update `currentReading` automatically. Also, include a function to fetch the last 100 rows for a history chart."
+- 註：原始 `stage_1_prompt.md` 將溫濕度欄位標示為 `float`，此處已改為 PRD 規範的 `float4`。
 
 ## 目錄建議（節錄自 PRD）
 - `TeaMonitorApp/`
