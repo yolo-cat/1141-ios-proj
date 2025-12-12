@@ -3,21 +3,21 @@
 TeaWarehouse-MVP iOS 端採用 SwiftUI + MVVM，資料源來自 Supabase。閱讀此檔前，請先掌握根目錄的 `AGENTS.md` 與 `stage_1_prd.md`。
 
 ## 依據
-- PRD：`../stage_1_prd.md`（資料表 `readings`、Auth、Realtime、History 圖表）
-- Prompt 範本：`../stage_1_prompt.md` 中的 iOS 指令
+- PRD：[`../stage_1_prd.md`](../stage_1_prd.md)（資料表 `readings`、Auth、Realtime、History 圖表）
+- Prompt 範本：[`../stage_1_prompt.md`](../stage_1_prompt.md) 的 iOS 指令區段
 
 ## 原則
 - **框架**：iOS 17+、Swift 5.9+、SwiftUI、`supabase-swift`、`Swift Charts`
 - **架構**：MVVM，ViewModel 不直接持有 View
-- **資料**：`readings` 欄位 `id | created_at | device_id | temperature(float4) | humidity(float4)`
+- **資料**：`readings` 欄位 `id | created_at | device_id | temperature | humidity`（PostgreSQL: float4；Swift: Float）
 - **即時性**：Dashboard 需訂閱 Realtime `INSERT`，History 以查詢排序後繪圖
-- **安全**：Anon 只用於寫入裝置；App 讀取需 authenticated session
+- **安全**：Anon 只用於寫入設備；App 讀取需 authenticated session
 
 ## Stage-1 必備輸出
 1) Auth：Email/Password 登入與註冊，保存 Session  
 2) Supabase 客戶端單例（供 ViewModel 共用）  
 3) Model `Reading` 對應資料表  
-4) `SensorViewModel`：訂閱 `readings` `INSERT`、維護 `currentReading`、抓取最近 N 筆供圖表  
+4) `SensorViewModel`：訂閱 `readings` `INSERT`、維護 `currentReading`、抓取歷史資料（預設 24h × 12 次/小時 ≈ 288 筆，Demo 可 100 筆）供圖表  
 5) 視圖：Dashboard（即時卡片 + 超標震動/通知）、History（Swift Charts 折線）  
 
 ## 最小開發流程（概要）
