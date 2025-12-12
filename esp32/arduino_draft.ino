@@ -76,8 +76,8 @@ bool readSensor(float &temperature, float &humidity) {
 
 bool postReading(float temperature, float humidity) {
   WiFiClientSecure client;
-  size_t caLen = strlen_P(SUPABASE_ROOT_CA);
-  if (caLen > 0) {
+  bool hasRootCA = SUPABASE_ROOT_CA != nullptr && pgm_read_byte(SUPABASE_ROOT_CA) != 0;
+  if (hasRootCA) {
     client.setCACert_P(SUPABASE_ROOT_CA);
   } else if (ALLOW_INSECURE_TLS) {
     client.setInsecure(); // dev-only fallback

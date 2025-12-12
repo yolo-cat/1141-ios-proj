@@ -12,15 +12,22 @@ private struct Reading: Equatable {
     let humidity: Float
 }
 
+private struct Thresholds {
+    let temperature: Float
+    let humidity: Float
+}
+
 private final class SensorViewModelSpecDouble {
     var currentReading: Reading?
     var history: [Reading] = []
     var alertRaised = false
-    var thresholds: (Float, Float) = (30.0, 70.0)
+    var thresholds = Thresholds(temperature: 30.0, humidity: 70.0)
 
     func handleRealtimeInsert(_ reading: Reading) {
+        let temperatureThreshold = thresholds.temperature
+        let humidityThreshold = thresholds.humidity
         currentReading = reading
-        alertRaised = reading.temperature > thresholds.0 || reading.humidity > thresholds.1
+        alertRaised = reading.temperature > temperatureThreshold || reading.humidity > humidityThreshold
     }
 
     func fetchHistory(limit: Int) -> [Reading] {
