@@ -17,7 +17,7 @@
   - RLS：允許 anon 寫入，僅 authenticated 可讀取
 - ESP32 韌體：
   - 開機連 Wi-Fi、斷線自動重連
-  - Demo 讀取週期 10 秒，若 NaN 則略過
+  - 標準讀取週期 5 分鐘，Demo 模式 10 秒；若 NaN 則略過
   - 以 REST POST JSON 上傳至 Supabase
 - iOS App（MVVM）：
   - Auth 登入/註冊
@@ -26,9 +26,9 @@
 
 ## 快速起手指令（可直接貼給 Agent）
 - Supabase SQL：
-  > "I am building an IoT project with Supabase. Please generate the SQL to create a table named `readings` with columns: id (int8, PK), created_at (timestamptz), device_id (text), temperature (float), humidity (float). Also, provide the SQL to enable RLS and allow public inserts but only authenticated selects."
+  > "I am building an IoT project with Supabase. Please generate the SQL to create a table named `readings` with columns: id (int8, PK), created_at (timestamptz), device_id (text), temperature (float4), humidity (float4). Also, provide the SQL to enable RLS and allow public inserts but only authenticated selects."
 - ESP32 範本：
-  > "Write an Arduino sketch for ESP32 with DHT11 connected to GPIO 15. It needs to connect to WiFi, read sensor data every 10 seconds, and POST a JSON payload `{'device_id': 'demo_1', 'temperature': ..., 'humidity': ...}` to a Supabase REST API endpoint. Use `HTTPClient` and `ArduinoJson`. Handle WiFi reconnection."
+  > "Write an Arduino sketch for ESP32 with DHT11 connected to GPIO 15. It needs to connect to WiFi, read sensor data every 10 seconds, and POST a JSON payload `{'device_id': 'tea_room_01', 'temperature': ..., 'humidity': ...}` to a Supabase REST API endpoint. Use `HTTPClient` and `ArduinoJson`. Handle WiFi reconnection."
 - iOS ViewModel：
   > "Create a SwiftUI ViewModel named `SensorViewModel` using the `supabase-swift` SDK. It should have a published property `currentReading`. It needs a function to subscribe to Realtime INSERT events on the `readings` table and update `currentReading` automatically. Also, include a function to fetch the last 100 rows for a history chart."
 
