@@ -25,9 +25,9 @@
   - History 以 Swift Charts 繪製最近資料折線
 
 ## 快速起手指令（可直接貼給 Agent）
-- Supabase SQL：
+- Supabase SQL（依 PRD 使用 `float4` 型別）：
   > "I am building an IoT project with Supabase. Please generate the SQL to create a table named `readings` with columns: id (int8, PK), created_at (timestamptz), device_id (text), temperature (float4), humidity (float4). Also, provide the SQL to enable RLS and allow public inserts but only authenticated selects."
-- ESP32 範本：
+- ESP32 範本（示範 device_id 採用 PRD 的 `tea_room_01`）：
   > "Write an Arduino sketch for ESP32 with DHT11 connected to GPIO 15. It needs to connect to WiFi, read sensor data every 10 seconds, and POST a JSON payload `{'device_id': 'tea_room_01', 'temperature': ..., 'humidity': ...}` to a Supabase REST API endpoint. Use `HTTPClient` and `ArduinoJson`. Handle WiFi reconnection."
 - iOS ViewModel：
   > "Create a SwiftUI ViewModel named `SensorViewModel` using the `supabase-swift` SDK. It should have a published property `currentReading`. It needs a function to subscribe to Realtime INSERT events on the `readings` table and update `currentReading` automatically. Also, include a function to fetch the last 100 rows for a history chart."
