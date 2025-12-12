@@ -15,6 +15,7 @@ DHTesp dht;
 WiFiClientSecure secureClient;
 unsigned long lastSendMs = 0;
 bool tlsReady = true;
+bool firstSend = true;
 
 void configureTls() {
     secureClient.setTimeout(15000);
@@ -126,9 +127,7 @@ void setup() {
     configureTls();
     connectWiFi();
 
-    unsigned long firstInterval = DEMO_MODE ? DEMO_INTERVAL_MS : STANDARD_INTERVAL_MS;
-    // Start with an immediate reading by backdating the last send timestamp.
-    lastSendMs = millis() - firstInterval;
+    lastSendMs = millis();
 }
 
 void loop() {
@@ -137,7 +136,8 @@ void loop() {
     unsigned long interval = DEMO_MODE ? DEMO_INTERVAL_MS : STANDARD_INTERVAL_MS;
     unsigned long now = millis();
 
-    if (now - lastSendMs >= interval) {
+    if (firstSend || now - lastSendMs >= interval) {
+        firstSend = false;
         lastSendMs = now;
         float temperature;
         float humidity;
