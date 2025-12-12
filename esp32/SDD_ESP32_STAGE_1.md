@@ -4,7 +4,7 @@ Stage 1 軟體設計說明（SDD）。需求來源：`PRD_ESP32_STAGE_1.md` / `P
 
 ## 目標
 - 以 ESP32 + DHT11（GPIO 15）週期性讀值（標準 300000ms、Demo 10000ms），若 NaN 則跳過。
-- 透過 HTTP POST 將 `device_id | temperature | humidity` 送至 `<SUPABASE_URL>/rest/v1/readings`，Header 含 `apikey`、`Authorization: Bearer <anon key>`、`Content-Type: application/json`、`Prefer: return=minimal`。
+- 透過 HTTP POST 將 `device_id | temperature | humidity` 送至 `<SUPABASE_URL>/rest/v1/readings`，Header 含 `api key`、`Authorization: Bearer <anon key>`、`Content-Type: application/json`、`Prefer: return=minimal`。
 - 憑證與 Wi-Fi 資訊由未版控的 `secrets.h` 提供。
 
 ## 模組與責任
