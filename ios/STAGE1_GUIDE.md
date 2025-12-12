@@ -1,4 +1,4 @@
-# iOS Stage-1 落地步驟
+# iOS Stage-1 實作步驟 (Implementation Steps)
 
 本指引依據 `ios/AGENTS.md` 與 `stage_1_prd.md`，將工作拆解為可立即執行的動作。
 
@@ -9,7 +9,7 @@
 3. **設定 Supabase**
    - 建立 `SupabaseManager` 單例：持有 client（url/key 由環境或 Build Settings 注入），提供 auth、realtime、查詢入口。
 4. **定義模型**
-   - 建立 `Reading`（對應 `readings` 欄位 `id`, `created_at`, `device_id`, `temperature: Float`, `humidity: Float`）。
+   - 建立 `Reading`（對應 `readings` 欄位 `id`, `created_at`, `device_id`, `temperature: Float`〈float4〉, `humidity: Float`〈float4〉）。
 5. **實作 Auth**
    - `AuthViewModel`：登入/註冊（email+password）、維護 session、登入成功後流向主畫面。
 6. **即時資料**
