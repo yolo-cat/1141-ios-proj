@@ -17,7 +17,7 @@ unsigned long lastSendMs = 0;
 
 void configureTls() {
     secureClient.setTimeout(15000);
-    if (SUPABASE_ROOT_CA[0] != '\0') {
+    if (strlen(SUPABASE_ROOT_CA) > 0) {
         secureClient.setCACert(SUPABASE_ROOT_CA);
         Serial.println("TLS: using provided root CA.");
     } else if (ALLOW_INSECURE_TLS) {
@@ -97,7 +97,7 @@ bool postReading(float temperature, float humidity) {
     String body;
     serializeJson(payload, body);
 
-    Serial.printf("POST %s -> %s\n", url.c_str(), body.c_str());
+    Serial.printf("POST %s\n", url.c_str());
     int httpStatus = http.POST(body);
     if (httpStatus > 0) {
         Serial.printf("HTTP status: %d\n", httpStatus);
@@ -105,7 +105,7 @@ bool postReading(float temperature, float humidity) {
         Serial.printf("HTTP POST failed: %s\n", http.errorToString(httpStatus).c_str());
     }
     http.end();
-    return httpStatus > 0 && httpStatus < 300;
+    return httpStatus >= 200 && httpStatus < 300;
 }
 
 void setup() {
