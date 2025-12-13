@@ -7,6 +7,10 @@
 #include <stdio.h>
 #include <string.h>
 
+#if defined(DEBUG) || defined(CORE_DEBUG_LEVEL) || !defined(NDEBUG)
+#define INSECURE_TLS_DEBUG_BUILD 1
+#endif
+
 #include "secrets.h"
 
 constexpr int DHT_PIN = 15;
@@ -25,13 +29,13 @@ WiFiClientSecure secureClient;
 unsigned long lastSendMs = 0;
 unsigned long lastDhtMs = 0;
 bool tlsConfigured = false;
-bool secretsReady = true;
+bool secretsReady = false;
 
 size_t boundedStrlen(const char *value, size_t maxLen) {
     if (value == nullptr) {
         return 0;
     }
-#if defined(__GLIBC__) || defined(ARDUINO_ARCH_ESP32)
+#if defined(ARDUINO_ARCH_ESP32)
     return strnlen(value, maxLen);
 #else
     size_t len = 0;
@@ -69,7 +73,7 @@ void configureTls() {
         Serial.println("TLS: using provided root CA.");
         tlsConfigured = true;
     }
-#if defined(DEBUG)
+#if defined(INSECURE_TLS_DEBUG_BUILD)
     else if (ALLOW_INSECURE_TLS) {
         secureClient.setInsecure();
         Serial.println("TLS: WARNING using insecure mode (no certificate validation).");
