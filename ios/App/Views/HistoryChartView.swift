@@ -13,9 +13,7 @@ struct HistoryChartView: View {
 #if canImport(Charts)
             if viewModel.history.isEmpty {
                 Text("No history yet").foregroundColor(.secondary)
-            } else if let stats = cachedStats ?? cacheAndReturnStats() {
-                let readings = viewModel.history
-
+            } else if let stats = cachedStats {
                 Chart {
                     ForEach(viewModel.history) { reading in
                         LineMark(
@@ -33,7 +31,26 @@ struct HistoryChartView: View {
                 }
                 .chartLegend(.visible)
                 .accessibilityLabel("Temperature and humidity history chart")
-                .accessibilityValue("Showing \(readings.count) points. Temperature from \(stats.tempMin, specifier: "%.1f") to \(stats.tempMax, specifier: "%.1f") degrees. Humidity from \(stats.humMin, specifier: "%.1f") to \(stats.humMax, specifier: "%.1f") percent.")
+                .accessibilityValue("Showing \(viewModel.history.count) points. Temperature from \(stats.tempMin, specifier: "%.1f") to \(stats.tempMax, specifier: "%.1f") degrees. Humidity from \(stats.humMin, specifier: "%.1f") to \(stats.humMax, specifier: "%.1f") percent.")
+            } else if let stats = cacheAndReturnStats() {
+                Chart {
+                    ForEach(viewModel.history) { reading in
+                        LineMark(
+                            x: .value("Time", reading.createdAt),
+                            y: .value("Temp", reading.temperature)
+                        )
+                        .foregroundStyle(by: .value("Metric", "Temperature"))
+
+                        LineMark(
+                            x: .value("Time", reading.createdAt),
+                            y: .value("Humidity", reading.humidity)
+                        )
+                        .foregroundStyle(by: .value("Metric", "Humidity"))
+                    }
+                }
+                .chartLegend(.visible)
+                .accessibilityLabel("Temperature and humidity history chart")
+                .accessibilityValue("Showing \(viewModel.history.count) points. Temperature from \(stats.tempMin, specifier: "%.1f") to \(stats.tempMax, specifier: "%.1f") degrees. Humidity from \(stats.humMin, specifier: "%.1f") to \(stats.humMax, specifier: "%.1f") percent.")
             }
 #else
             Text("Charts framework not available in this environment.")
@@ -68,7 +85,7 @@ struct HistoryChartView: View {
         if let cachedStats { return cachedStats }
         let computed = computeStats()
         cachedStats = computed
-        return cachedStats
+        return computed
     }
 }
 #endif
