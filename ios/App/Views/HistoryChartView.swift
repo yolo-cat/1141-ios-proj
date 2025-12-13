@@ -43,7 +43,6 @@ struct HistoryChartView: View {
         .padding()
         .onAppear {
             viewModel.fetchHistory()
-            cachedStats = computeStats()
         }
         .onChange(of: viewModel.history, initial: false) { _ in
             cachedStats = computeStats()
@@ -56,14 +55,11 @@ struct HistoryChartView: View {
         var tempMax = first.temperature
         var humMin = first.humidity
         var humMax = first.humidity
-        if viewModel.history.count > 1 {
-            for i in 1..<viewModel.history.count {
-                let reading = viewModel.history[i]
-                tempMin = min(tempMin, reading.temperature)
-                tempMax = max(tempMax, reading.temperature)
-                humMin = min(humMin, reading.humidity)
-                humMax = max(humMax, reading.humidity)
-            }
+        for reading in viewModel.history.dropFirst() {
+            tempMin = min(tempMin, reading.temperature)
+            tempMax = max(tempMax, reading.temperature)
+            humMin = min(humMin, reading.humidity)
+            humMax = max(humMax, reading.humidity)
         }
         return (tempMin, tempMax, humMin, humMax)
     }
