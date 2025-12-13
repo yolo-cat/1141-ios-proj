@@ -33,7 +33,11 @@ CREATE POLICY "allow anon insert"
   ON public.readings
   FOR INSERT
   TO anon
-  WITH CHECK (true);
+  WITH CHECK (
+    length(device_id) > 0 AND length(device_id) < 128 AND
+    temperature > -50 AND temperature < 100 AND
+    humidity >= 0 AND humidity <= 100
+  );
 
 -- Policy 2: Allow authenticated users to SELECT data (for iOS app)
 CREATE POLICY "allow authenticated select"
