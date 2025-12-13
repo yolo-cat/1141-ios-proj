@@ -114,14 +114,22 @@ bool postReading(float temperature, float humidity) {
     }
 
     char url[256];
-    snprintf(url, sizeof(url), "%s/rest/v1/readings", SUPABASE_URL);
+    int urlLen = snprintf(url, sizeof(url), "%s/rest/v1/readings", SUPABASE_URL);
+    if (urlLen <= 0 || urlLen >= static_cast<int>(sizeof(url))) {
+        Serial.println("Cannot POST: SUPABASE_URL is too long.");
+        return false;
+    }
     HTTPClient http;
     http.begin(secureClient, url);
     http.addHeader("Content-Type", "application/json");
     http.addHeader("Prefer", "return=minimal");
     http.addHeader("apikey", SUPABASE_ANON_KEY);
     char authHeader[256];
-    snprintf(authHeader, sizeof(authHeader), "Bearer %s", SUPABASE_ANON_KEY);
+    int authLen = snprintf(authHeader, sizeof(authHeader), "Bearer %s", SUPABASE_ANON_KEY);
+    if (authLen <= 0 || authLen >= static_cast<int>(sizeof(authHeader))) {
+        Serial.println("Cannot POST: SUPABASE_ANON_KEY is too long for Authorization header.");
+        return false;
+    }
     http.addHeader("Authorization", authHeader);
 
     StaticJsonDocument<200> payload;
@@ -153,9 +161,10 @@ void setup() {
     Serial.printf("DHT11 initialized on GPIO %d\n", DHT_PIN);
 
     secretsReady = strlen(DEVICE_ID) > 0 && strncmp(DEVICE_ID, "YOUR_", 5) != 0 &&
-                   strlen(SUPABASE_ANON_KEY) > 0 && strncmp(SUPABASE_ANON_KEY, "YOUR_", 5) != 0;
+                   strlen(SUPABASE_ANON_KEY) > 0 && strncmp(SUPABASE_ANON_KEY, "YOUR_", 5) != 0 &&
+                   strlen(SUPABASE_URL) > 0 && strstr(SUPABASE_URL, "<PROJECT_REF>") == nullptr;
     if (!secretsReady) {
-        Serial.println("secrets.h placeholders detected (DEVICE_ID or SUPABASE_ANON_KEY); update before running.");
+        Serial.println("secrets.h placeholders detected (DEVICE_ID, SUPABASE_URL, or SUPABASE_ANON_KEY); update before running.");
     }
 
     configureTls();
