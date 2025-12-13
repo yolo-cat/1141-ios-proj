@@ -3,6 +3,8 @@
 #include <HTTPClient.h>
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
+#include <cstdarg>
+#include <cstdio>
 #include <cstring>
 
 #include "secrets.h"
@@ -14,6 +16,7 @@ constexpr unsigned long DEMO_INTERVAL_MS = 10UL * 1000UL;
 constexpr unsigned long HTTP_TIMEOUT_MS = 15000;
 constexpr int WIFI_MAX_RETRIES = 40;
 constexpr unsigned long MIN_DHT_INTERVAL_MS = 1000;
+constexpr size_t MAX_SECRET_LEN = 255;
 
 DHTesp dht;
 WiFiClientSecure secureClient;
@@ -21,6 +24,14 @@ unsigned long lastSendMs = 0;
 unsigned long lastDhtMs = 0;
 bool tlsConfigured = false;
 bool secretsReady = true;
+
+bool safeFormat(char *buffer, size_t bufferSize, const char *format, ...) {
+    va_list args;
+    va_start(args, format);
+    int written = vsnprintf(buffer, bufferSize, format, args);
+    va_end(args);
+    return written > 0 && written < static_cast<int>(bufferSize);
+}
 
 void configureTls() {
     secureClient.setTimeout(HTTP_TIMEOUT_MS);
@@ -114,8 +125,7 @@ bool postReading(float temperature, float humidity) {
     }
 
     char url[256];
-    int urlLen = snprintf(url, sizeof(url), "%s/rest/v1/readings", SUPABASE_URL);
-    if (urlLen <= 0 || urlLen >= static_cast<int>(sizeof(url))) {
+    if (!safeFormat(url, sizeof(url), "%s/rest/v1/readings", SUPABASE_URL)) {
         Serial.println("Cannot POST: SUPABASE_URL is too long.");
         return false;
     }
@@ -125,8 +135,7 @@ bool postReading(float temperature, float humidity) {
     http.addHeader("Prefer", "return=minimal");
     http.addHeader("apikey", SUPABASE_ANON_KEY);
     char authHeader[256];
-    int authLen = snprintf(authHeader, sizeof(authHeader), "Bearer %s", SUPABASE_ANON_KEY);
-    if (authLen <= 0 || authLen >= static_cast<int>(sizeof(authHeader))) {
+    if (!safeFormat(authHeader, sizeof(authHeader), "Bearer %s", SUPABASE_ANON_KEY)) {
         Serial.println("Cannot POST: SUPABASE_ANON_KEY is too long for Authorization header.");
         return false;
     }
@@ -160,9 +169,9 @@ void setup() {
     dht.setup(DHT_PIN, DHTesp::DHT11);
     Serial.printf("DHT11 initialized on GPIO %d\n", DHT_PIN);
 
-    secretsReady = strlen(DEVICE_ID) > 0 && strncmp(DEVICE_ID, "YOUR_", 5) != 0 &&
-                   strlen(SUPABASE_ANON_KEY) > 0 && strncmp(SUPABASE_ANON_KEY, "YOUR_", 5) != 0 &&
-                   strlen(SUPABASE_URL) > 0 && strstr(SUPABASE_URL, "<PROJECT_REF>") == nullptr;
+    secretsReady = strnlen(DEVICE_ID, MAX_SECRET_LEN) > 0 && strncmp(DEVICE_ID, "YOUR_", 5) != 0 &&
+                   strnlen(SUPABASE_ANON_KEY, MAX_SECRET_LEN) > 0 && strncmp(SUPABASE_ANON_KEY, "YOUR_", 5) != 0 &&
+                   strnlen(SUPABASE_URL, MAX_SECRET_LEN) > 0 && strstr(SUPABASE_URL, "<PROJECT_REF>") == nullptr;
     if (!secretsReady) {
         Serial.println("secrets.h placeholders detected (DEVICE_ID, SUPABASE_URL, or SUPABASE_ANON_KEY); update before running.");
     }
