@@ -20,6 +20,7 @@ constexpr unsigned long DEMO_INTERVAL_MS = 10UL * 1000UL;
 constexpr unsigned long HTTP_TIMEOUT_MS = 15000;
 constexpr int WIFI_MAX_RETRIES = 40;
 constexpr unsigned long MIN_DHT_INTERVAL_MS = 1000;
+constexpr unsigned long RETRY_INTERVAL_MS = 30000;
 constexpr size_t MAX_SECRET_LEN = 255;
 constexpr size_t MAX_URL_LEN = 256;
 constexpr size_t MAX_HEADER_LEN = 256;
@@ -29,6 +30,7 @@ DHTesp dht;
 WiFiClientSecure secureClient;
 unsigned long lastSendMs = 0;
 unsigned long lastDhtMs = 0;
+unsigned long nextDueMs = 0;
 bool tlsConfigured = false;
 bool secretsReady = false;
 
@@ -196,7 +198,7 @@ bool postReading(float temperature, float humidity) {
         Serial.printf("HTTP status: %d\n", httpStatus);
     } else {
         Serial.printf("HTTP POST failed: %s\n", http.errorToString(httpStatus).c_str());
-        Serial.println("Will retry on the next scheduled interval.");
+        Serial.println("Will retry sooner after a transient failure.");
     }
     http.end();
     return httpStatus >= 200 && httpStatus < 300;
@@ -240,14 +242,18 @@ void loop() {
 
     unsigned long interval = DEMO_MODE ? DEMO_INTERVAL_MS : STANDARD_INTERVAL_MS;
     unsigned long now = millis();
+    bool retryDue = nextDueMs != 0 && static_cast<uint32_t>(now - nextDueMs) < 0x80000000;
 
-    if (intervalElapsed(lastSendMs, interval, now)) {
+    if (retryDue || intervalElapsed(lastSendMs, interval, now)) {
         lastSendMs = now;
+        nextDueMs = 0;
         float temperature;
         float humidity;
 
         if (readSensor(temperature, humidity)) {
-            postReading(temperature, humidity);
+            if (!postReading(temperature, humidity)) {
+                nextDueMs = now + RETRY_INTERVAL_MS;
+            }
         }
     }
 
