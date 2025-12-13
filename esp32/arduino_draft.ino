@@ -3,6 +3,7 @@
 #include <HTTPClient.h>
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
+#include <cstring>
 
 #include "secrets.h"
 
@@ -12,25 +13,36 @@ constexpr unsigned long STANDARD_INTERVAL_MS = 5UL * 60UL * 1000UL;
 constexpr unsigned long DEMO_INTERVAL_MS = 10UL * 1000UL;
 constexpr unsigned long HTTP_TIMEOUT_MS = 15000;
 constexpr int WIFI_MAX_RETRIES = 40;
+constexpr unsigned long MIN_DHT_INTERVAL_MS = 1000;
 
 DHTesp dht;
 WiFiClientSecure secureClient;
 unsigned long lastSendMs = 0;
-bool tlsReady = true;
-bool firstSend = true;
+unsigned long lastDhtMs = 0;
+bool tlsConfigured = false;
+bool secretsReady = true;
 
 void configureTls() {
     secureClient.setTimeout(HTTP_TIMEOUT_MS);
-    tlsReady = true;
+    tlsConfigured = false;
     if (SUPABASE_ROOT_CA[0] != '\0') {
         secureClient.setCACert(SUPABASE_ROOT_CA);
         Serial.println("TLS: using provided root CA.");
-    } else if (ALLOW_INSECURE_TLS) {
+        tlsConfigured = true;
+    }
+#if defined(DEBUG)
+    else if (ALLOW_INSECURE_TLS) {
         secureClient.setInsecure();
         Serial.println("TLS: WARNING using insecure mode (no certificate validation).");
-    } else {
+        tlsConfigured = true;
+    }
+#else
+    else if (ALLOW_INSECURE_TLS) {
+        Serial.println("TLS: ALLOW_INSECURE_TLS is ignored unless built with DEBUG.");
+    }
+#endif
+    else {
         Serial.println("TLS: no root CA configured; set SUPABASE_ROOT_CA or enable ALLOW_INSECURE_TLS for testing.");
-        tlsReady = false;
     }
 }
 
@@ -57,7 +69,7 @@ void connectWiFi() {
         Serial.print("Wi-Fi connected, IP: ");
         Serial.println(WiFi.localIP());
     } else {
-        Serial.println("Wi-Fi connection failed; will retry.");
+        Serial.printf("Wi-Fi connection failed after %d attempts (~%lus); will retry.\n", WIFI_MAX_RETRIES, (WIFI_MAX_RETRIES * 250UL) / 1000UL);
     }
 }
 
@@ -69,6 +81,11 @@ void ensureWiFiConnected() {
 }
 
 bool readSensor(float &temperature, float &humidity) {
+    unsigned long now = millis();
+    if (lastDhtMs != 0 && now - lastDhtMs < MIN_DHT_INTERVAL_MS) {
+        Serial.println("DHT11 read skipped: sampling too quickly.");
+        return false;
+    }
     TempAndHumidity data = dht.getTempAndHumidity();
     if (isnan(data.temperature) || isnan(data.humidity)) {
         Serial.println("DHT11 reading is NaN; skipping upload.");
@@ -77,6 +94,7 @@ bool readSensor(float &temperature, float &humidity) {
 
     temperature = data.temperature;
     humidity = data.humidity;
+    lastDhtMs = now;
     Serial.printf("DHT11 -> temp: %.2f°C, humidity: %.2f%%\n", temperature, humidity);
     return true;
 }
@@ -86,18 +104,25 @@ bool postReading(float temperature, float humidity) {
         Serial.println("Cannot POST: Wi-Fi not connected.");
         return false;
     }
-    if (!tlsReady) {
+    if (!tlsConfigured) {
         Serial.println("Cannot POST: TLS is not configured. Add SUPABASE_ROOT_CA or enable ALLOW_INSECURE_TLS.");
         return false;
     }
+    if (!secretsReady) {
+        Serial.println("Cannot POST: secrets placeholders detected; update secrets.h.");
+        return false;
+    }
 
-    String url = String(SUPABASE_URL) + "/rest/v1/readings";
+    char url[256];
+    snprintf(url, sizeof(url), "%s/rest/v1/readings", SUPABASE_URL);
     HTTPClient http;
     http.begin(secureClient, url);
     http.addHeader("Content-Type", "application/json");
     http.addHeader("Prefer", "return=minimal");
     http.addHeader("apikey", SUPABASE_ANON_KEY);
-    http.addHeader("Authorization", String("Bearer ") + SUPABASE_ANON_KEY);
+    char authHeader[256];
+    snprintf(authHeader, sizeof(authHeader), "Bearer %s", SUPABASE_ANON_KEY);
+    http.addHeader("Authorization", authHeader);
 
     StaticJsonDocument<200> payload;
     payload["device_id"] = DEVICE_ID;
@@ -107,12 +132,13 @@ bool postReading(float temperature, float humidity) {
     String body;
     serializeJson(payload, body);
 
-    Serial.printf("POST %s\n", url.c_str());
+    Serial.printf("POST %s\n", url);
     int httpStatus = http.POST(body);
     if (httpStatus > 0) {
         Serial.printf("HTTP status: %d\n", httpStatus);
     } else {
         Serial.printf("HTTP POST failed: %s\n", http.errorToString(httpStatus).c_str());
+        Serial.println("Will retry on the next scheduled interval.");
     }
     http.end();
     return httpStatus >= 200 && httpStatus < 300;
@@ -126,10 +152,16 @@ void setup() {
     dht.setup(DHT_PIN, DHTesp::DHT11);
     Serial.printf("DHT11 initialized on GPIO %d\n", DHT_PIN);
 
+    secretsReady = strlen(DEVICE_ID) > 0 && strncmp(DEVICE_ID, "YOUR_", 5) != 0 &&
+                   strlen(SUPABASE_ANON_KEY) > 0 && strncmp(SUPABASE_ANON_KEY, "YOUR_", 5) != 0;
+    if (!secretsReady) {
+        Serial.println("secrets.h placeholders detected (DEVICE_ID or SUPABASE_ANON_KEY); update before running.");
+    }
+
     configureTls();
     connectWiFi();
 
-    lastSendMs = millis();
+    lastSendMs = 0;
 }
 
 void loop() {
@@ -138,8 +170,7 @@ void loop() {
     unsigned long interval = DEMO_MODE ? DEMO_INTERVAL_MS : STANDARD_INTERVAL_MS;
     unsigned long now = millis();
 
-    if (firstSend || now - lastSendMs >= interval) {
-        firstSend = false;
+    if (lastSendMs == 0 || now - lastSendMs >= interval) {
         lastSendMs = now;
         float temperature;
         float humidity;
