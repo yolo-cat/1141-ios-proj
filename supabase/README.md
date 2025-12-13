@@ -1,8 +1,27 @@
 # Supabase README（階段一）
 
+**狀態：✅ 已完成實作**
+
 目標：依 `supabase/AGENTS.md`、`../PRD_STAGE1.md`（摘要於 `PRD_SUPABASE_STAGE_1.md`）建立 `readings` 表並設定 RLS。`supabase/TASKS_SUPABASE_STAGE_1.md` 提供速查清單，本 README 保留指令範例。
 
+## 📁 已實作檔案
+- `001_create_readings_table.sql` - 資料庫遷移檔案（可重複執行）
+- `test_supabase_stage1.sh` - 自動化測試腳本
+- `SETUP_GUIDE.md` - 完整實作指南
+
+詳細的實作步驟和測試方法請參考 [`SETUP_GUIDE.md`](./SETUP_GUIDE.md)。
+
 ## 極簡步驟
+
+### 使用已實作的遷移檔案（推薦）
+```bash
+# 在 Supabase SQL Editor 中執行
+# 複製並執行 001_create_readings_table.sql 的內容
+```
+
+詳細步驟請參考 [`SETUP_GUIDE.md`](./SETUP_GUIDE.md)。
+
+### SQL 內容參考
 1) 取得 `project ref`、`anon key`、`authenticated access token`。  
 2) SQL（可重複執行，直接貼入 SQL Editor / CLI）：
 ```sql
@@ -21,7 +40,14 @@ drop policy if exists "allow authenticated select" on public.readings;
 create policy "allow authenticated select" on public.readings for select to authenticated using (true);
 ```
 
-3) REST 驗證  
+3) REST 驗證
+
+### 自動化測試（推薦）
+```bash
+./test_supabase_stage1.sh <PROJECT_REF> <ANON_KEY> <ACCESS_TOKEN>
+```
+
+### 手動測試範例
 - POST（anon，預期 201，請替換為實際測試數值）：
 ```bash
 curl -X POST "https://<PROJECT_REF>.supabase.co/rest/v1/readings" \
@@ -38,6 +64,10 @@ curl "https://<PROJECT_REF>.supabase.co/rest/v1/readings?select=*" \
   -H "Authorization: Bearer $ACCESS_TOKEN"
 ```
 
-4) 交付檢查  
-- SQL / migration 檔留在 `supabase/`。  
-- 欄位型別保持 `float4`；RLS 為 anon insert、authenticated select。
+4) 交付檢查
+- ✅ SQL migration 檔案：`001_create_readings_table.sql`
+- ✅ 測試腳本：`test_supabase_stage1.sh`
+- ✅ 實作指南：`SETUP_GUIDE.md`
+- ✅ 欄位型別保持 `float4`
+- ✅ RLS 策略：anon insert、authenticated select
+- ✅ 效能索引：已建立 `created_at` 和 `device_id` 索引
