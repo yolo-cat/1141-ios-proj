@@ -12,7 +12,6 @@
 2. ✅ 準備認證資訊：`project ref`、`anon key`、`authenticated access token`（用於 SELECT 驗證）。
 
 3. ✅ 建立資料庫遷移檔案 `001_create_readings_table.sql`，包含：
-3. ✅ 建立資料庫遷移檔案 `001_create_readings_table.sql`，包含：
    - readings 資料表定義
    - RLS 策略（anon insert, authenticated select）
    - 效能索引（created_at, device_id）
