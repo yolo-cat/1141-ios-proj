@@ -110,8 +110,8 @@ echo "Inserting 3 test readings..."
 echo ""
 
 for i in {1..3}; do
-    TEMP=$(echo "24 + $i * 0.5" | bc)
-    HUMID=$(echo "60 + $i * 2" | bc)
+    TEMP=$(awk "BEGIN {print 24 + $i * 0.5}")
+    HUMID=$((60 + i * 2))
 
     curl -s -X POST "$BASE_URL" \
       -H "apikey: $ANON_KEY" \
