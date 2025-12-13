@@ -3,9 +3,9 @@
 #include <HTTPClient.h>
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
-#include <cstdarg>
-#include <cstdio>
-#include <cstring>
+#include <stdarg.h>
+#include <stdio.h>
+#include <string.h>
 
 #include "secrets.h"
 
@@ -17,6 +17,8 @@ constexpr unsigned long HTTP_TIMEOUT_MS = 15000;
 constexpr int WIFI_MAX_RETRIES = 40;
 constexpr unsigned long MIN_DHT_INTERVAL_MS = 1000;
 constexpr size_t MAX_SECRET_LEN = 255;
+constexpr size_t MAX_URL_LEN = 256;
+constexpr size_t MAX_HEADER_LEN = 256;
 
 DHTesp dht;
 WiFiClientSecure secureClient;
@@ -24,6 +26,14 @@ unsigned long lastSendMs = 0;
 unsigned long lastDhtMs = 0;
 bool tlsConfigured = false;
 bool secretsReady = true;
+
+size_t boundedStrlen(const char *value, size_t maxLen) {
+    size_t len = 0;
+    while (len < maxLen && value[len] != '\0') {
+        len++;
+    }
+    return len;
+}
 
 bool safeFormat(char *buffer, size_t bufferSize, const char *format, ...) {
     va_list args;
@@ -124,7 +134,7 @@ bool postReading(float temperature, float humidity) {
         return false;
     }
 
-    char url[256];
+    char url[MAX_URL_LEN];
     if (!safeFormat(url, sizeof(url), "%s/rest/v1/readings", SUPABASE_URL)) {
         Serial.println("Cannot POST: SUPABASE_URL is too long.");
         return false;
@@ -134,7 +144,7 @@ bool postReading(float temperature, float humidity) {
     http.addHeader("Content-Type", "application/json");
     http.addHeader("Prefer", "return=minimal");
     http.addHeader("apikey", SUPABASE_ANON_KEY);
-    char authHeader[256];
+    char authHeader[MAX_HEADER_LEN];
     if (!safeFormat(authHeader, sizeof(authHeader), "Bearer %s", SUPABASE_ANON_KEY)) {
         Serial.println("Cannot POST: SUPABASE_ANON_KEY is too long for Authorization header.");
         return false;
@@ -169,9 +179,9 @@ void setup() {
     dht.setup(DHT_PIN, DHTesp::DHT11);
     Serial.printf("DHT11 initialized on GPIO %d\n", DHT_PIN);
 
-    secretsReady = strnlen(DEVICE_ID, MAX_SECRET_LEN) > 0 && strncmp(DEVICE_ID, "YOUR_", 5) != 0 &&
-                   strnlen(SUPABASE_ANON_KEY, MAX_SECRET_LEN) > 0 && strncmp(SUPABASE_ANON_KEY, "YOUR_", 5) != 0 &&
-                   strnlen(SUPABASE_URL, MAX_SECRET_LEN) > 0 && strstr(SUPABASE_URL, "<PROJECT_REF>") == nullptr;
+    secretsReady = boundedStrlen(DEVICE_ID, MAX_SECRET_LEN) > 0 && strncmp(DEVICE_ID, "YOUR_", 5) != 0 &&
+                   boundedStrlen(SUPABASE_ANON_KEY, MAX_SECRET_LEN) > 0 && strncmp(SUPABASE_ANON_KEY, "YOUR_", 5) != 0 &&
+                   boundedStrlen(SUPABASE_URL, MAX_SECRET_LEN) > 0 && strstr(SUPABASE_URL, "<PROJECT_REF>") == nullptr;
     if (!secretsReady) {
         Serial.println("secrets.h placeholders detected (DEVICE_ID, SUPABASE_URL, or SUPABASE_ANON_KEY); update before running.");
     }
