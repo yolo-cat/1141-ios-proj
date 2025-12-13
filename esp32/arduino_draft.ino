@@ -31,11 +31,15 @@ size_t boundedStrlen(const char *value, size_t maxLen) {
     if (value == nullptr) {
         return 0;
     }
+#if defined(__GLIBC__) || defined(ARDUINO_ARCH_ESP32)
+    return strnlen(value, maxLen);
+#else
     size_t len = 0;
     while (len < maxLen && value[len] != '\0') {
         len++;
     }
     return len;
+#endif
 }
 
 bool safeFormat(char *buffer, size_t bufferSize, const char *format, ...) {
@@ -43,11 +47,18 @@ bool safeFormat(char *buffer, size_t bufferSize, const char *format, ...) {
     va_start(args, format);
     int written = vsnprintf(buffer, bufferSize, format, args);
     va_end(args);
-    return written > 0 && written < static_cast<int>(bufferSize);
+    return written >= 0 && written < static_cast<int>(bufferSize);
 }
 
 bool intervalElapsed(unsigned long last, unsigned long interval, unsigned long now) {
     return last == 0 || static_cast<unsigned long>(now - last) >= interval;
+}
+
+bool validateSecrets() {
+    return DEVICE_ID != nullptr && SUPABASE_ANON_KEY != nullptr && SUPABASE_URL != nullptr &&
+           boundedStrlen(DEVICE_ID, MAX_SECRET_LEN) > 0 && strncmp(DEVICE_ID, "YOUR_", 5) != 0 &&
+           boundedStrlen(SUPABASE_ANON_KEY, MAX_SECRET_LEN) > 0 && strncmp(SUPABASE_ANON_KEY, "YOUR_", 5) != 0 &&
+           boundedStrlen(SUPABASE_URL, MAX_SECRET_LEN) > 0 && strstr(SUPABASE_URL, "<PROJECT_REF>") == nullptr;
 }
 
 void configureTls() {
@@ -186,10 +197,7 @@ void setup() {
     dht.setup(DHT_PIN, DHTesp::DHT11);
     Serial.printf("DHT11 initialized on GPIO %d\n", DHT_PIN);
 
-    secretsReady = DEVICE_ID != nullptr && SUPABASE_ANON_KEY != nullptr && SUPABASE_URL != nullptr &&
-                   boundedStrlen(DEVICE_ID, MAX_SECRET_LEN) > 0 && strncmp(DEVICE_ID, "YOUR_", 5) != 0 &&
-                   boundedStrlen(SUPABASE_ANON_KEY, MAX_SECRET_LEN) > 0 && strncmp(SUPABASE_ANON_KEY, "YOUR_", 5) != 0 &&
-                   boundedStrlen(SUPABASE_URL, MAX_SECRET_LEN) > 0 && strstr(SUPABASE_URL, "<PROJECT_REF>") == nullptr;
+    secretsReady = validateSecrets();
     if (!secretsReady) {
         Serial.println("secrets.h placeholders detected (DEVICE_ID, SUPABASE_URL, or SUPABASE_ANON_KEY); update before running.");
     }
