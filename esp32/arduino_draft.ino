@@ -213,6 +213,20 @@ void setup() {
     secretsReady = validateSecrets();
     if (!secretsReady) {
         Serial.println("secrets.h placeholders detected (DEVICE_ID, SUPABASE_URL, or SUPABASE_ANON_KEY); update before running.");
+#ifdef LED_BUILTIN
+        pinMode(LED_BUILTIN, OUTPUT);
+#endif
+        while (true) {
+            Serial.println("CRITICAL: update secrets.h (DEVICE_ID/SUPABASE_URL/SUPABASE_ANON_KEY). Halting.");
+#ifdef LED_BUILTIN
+            digitalWrite(LED_BUILTIN, HIGH);
+            delay(150);
+            digitalWrite(LED_BUILTIN, LOW);
+            delay(150);
+#else
+            delay(300);
+#endif
+        }
     }
 
     configureTls();
