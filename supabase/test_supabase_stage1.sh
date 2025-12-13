@@ -131,6 +131,87 @@ done
 echo -e "${GREEN}✓ Test 4 COMPLETED${NC}"
 echo ""
 
+# Test 5: Validate data constraints - Invalid temperature (too high)
+echo -e "${YELLOW}Test 5: POST with invalid temperature (> 100)${NC}"
+echo "Expected: 400 or 403 (rejected by RLS policy)"
+echo ""
+
+RESPONSE=$(curl -s -w "\nHTTP_CODE:%{http_code}" -X POST "$BASE_URL" \
+  -H "apikey: $ANON_KEY" \
+  -H "Authorization: Bearer $ANON_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Prefer: return=minimal" \
+  -d '{
+    "device_id": "tea_room_01",
+    "temperature": 150.0,
+    "humidity": 62.0
+  }')
+
+HTTP_CODE=$(echo "$RESPONSE" | grep "HTTP_CODE" | cut -d: -f2)
+BODY=$(echo "$RESPONSE" | grep -v "HTTP_CODE")
+
+if [ "$HTTP_CODE" = "400" ] || [ "$HTTP_CODE" = "403" ]; then
+    echo -e "${GREEN}✓ Test 5 PASSED: HTTP $HTTP_CODE (Invalid data rejected)${NC}"
+else
+    echo -e "${RED}✗ Test 5 FAILED: HTTP $HTTP_CODE (Expected 400/403)${NC}"
+    echo "Response: $BODY"
+fi
+echo ""
+
+# Test 6: Validate data constraints - Invalid humidity (negative)
+echo -e "${YELLOW}Test 6: POST with invalid humidity (< 0)${NC}"
+echo "Expected: 400 or 403 (rejected by RLS policy)"
+echo ""
+
+RESPONSE=$(curl -s -w "\nHTTP_CODE:%{http_code}" -X POST "$BASE_URL" \
+  -H "apikey: $ANON_KEY" \
+  -H "Authorization: Bearer $ANON_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Prefer: return=minimal" \
+  -d '{
+    "device_id": "tea_room_01",
+    "temperature": 25.0,
+    "humidity": -10.0
+  }')
+
+HTTP_CODE=$(echo "$RESPONSE" | grep "HTTP_CODE" | cut -d: -f2)
+BODY=$(echo "$RESPONSE" | grep -v "HTTP_CODE")
+
+if [ "$HTTP_CODE" = "400" ] || [ "$HTTP_CODE" = "403" ]; then
+    echo -e "${GREEN}✓ Test 6 PASSED: HTTP $HTTP_CODE (Invalid data rejected)${NC}"
+else
+    echo -e "${RED}✗ Test 6 FAILED: HTTP $HTTP_CODE (Expected 400/403)${NC}"
+    echo "Response: $BODY"
+fi
+echo ""
+
+# Test 7: Validate data constraints - Empty device_id
+echo -e "${YELLOW}Test 7: POST with empty device_id${NC}"
+echo "Expected: 400 or 403 (rejected by RLS policy)"
+echo ""
+
+RESPONSE=$(curl -s -w "\nHTTP_CODE:%{http_code}" -X POST "$BASE_URL" \
+  -H "apikey: $ANON_KEY" \
+  -H "Authorization: Bearer $ANON_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Prefer: return=minimal" \
+  -d '{
+    "device_id": "",
+    "temperature": 25.0,
+    "humidity": 62.0
+  }')
+
+HTTP_CODE=$(echo "$RESPONSE" | grep "HTTP_CODE" | cut -d: -f2)
+BODY=$(echo "$RESPONSE" | grep -v "HTTP_CODE")
+
+if [ "$HTTP_CODE" = "400" ] || [ "$HTTP_CODE" = "403" ]; then
+    echo -e "${GREEN}✓ Test 7 PASSED: HTTP $HTTP_CODE (Invalid data rejected)${NC}"
+else
+    echo -e "${RED}✗ Test 7 FAILED: HTTP $HTTP_CODE (Expected 400/403)${NC}"
+    echo "Response: $BODY"
+fi
+echo ""
+
 # Summary
 echo "======================================"
 echo -e "${GREEN}Testing Complete!${NC}"
