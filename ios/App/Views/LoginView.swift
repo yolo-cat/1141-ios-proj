@@ -30,6 +30,11 @@ struct LoginView: View {
                     .foregroundColor(.red)
                     .font(.footnote)
             }
+            if let status = authViewModel.statusMessage {
+                Text(status)
+                    .foregroundColor(.green)
+                    .font(.footnote)
+            }
 
             Button {
                 isSignUp ? authViewModel.signUp() : authViewModel.signIn()

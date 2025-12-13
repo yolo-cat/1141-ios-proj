@@ -11,8 +11,9 @@ final class SensorViewModel: ObservableObject {
     var temperatureThreshold: Float = StageConfig.temperatureThreshold
     var humidityThreshold: Float = StageConfig.humidityThreshold
     var alertHandler: (() -> Void)?
+    private var alertActive = false
 
-    private let manager: SupabaseManaging
+    nonisolated(unsafe) private let manager: SupabaseManaging
 
     init(manager: SupabaseManaging = SupabaseManager.shared) {
         self.manager = manager
@@ -55,13 +56,17 @@ final class SensorViewModel: ObservableObject {
     private func checkAlert(for reading: Reading) {
         let overTemp = reading.temperature > temperatureThreshold
         let overHum = reading.humidity > humidityThreshold
-        guard overTemp || overHum else { return }
+        guard overTemp || overHum else {
+            alertActive = false
+            return
+        }
 
         let now = Date()
-        if let last = lastAlertAt, now.timeIntervalSince(last) < StageConfig.alertCooldown {
+        if alertActive, let last = lastAlertAt, now.timeIntervalSince(last) < StageConfig.alertCooldown {
             return
         }
         lastAlertAt = now
+        alertActive = true
         alertHandler?()
     }
 }

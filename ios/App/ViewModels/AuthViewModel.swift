@@ -8,9 +8,10 @@ final class AuthViewModel: ObservableObject {
     @Published var password: String = ""
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
+    @Published var statusMessage: String?
     @Published var sessionToken: String?
 
-    private let manager: SupabaseManaging
+    nonisolated(unsafe) private let manager: SupabaseManaging
 
     init(manager: SupabaseManaging = SupabaseManager.shared) {
         self.manager = manager
@@ -19,6 +20,7 @@ final class AuthViewModel: ObservableObject {
 
     func signIn() {
         errorMessage = nil
+        statusMessage = nil
         isLoading = true
         manager.signIn(email: email, password: password) { [weak self] result in
             guard let self else { return }
@@ -36,6 +38,7 @@ final class AuthViewModel: ObservableObject {
 
     func signUp() {
         errorMessage = nil
+        statusMessage = nil
         isLoading = true
         manager.signUp(email: email, password: password) { [weak self] result in
             guard let self else { return }
@@ -43,7 +46,7 @@ final class AuthViewModel: ObservableObject {
                 self.isLoading = false
                 switch result {
                 case .success:
-                    self.errorMessage = "Sign up succeeded. Please sign in after verification."
+                    self.statusMessage = "Sign up succeeded. Please sign in after verification."
                 case .failure(let error):
                     self.errorMessage = error.localizedDescription
                 }
