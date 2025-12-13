@@ -13,7 +13,7 @@ struct HistoryChartView: View {
 #if canImport(Charts)
             if viewModel.history.isEmpty {
                 Text("No history yet").foregroundColor(.secondary)
-            } else if let stats = cachedStats ?? computeStats() {
+            } else if let stats = cachedStats ?? cacheAndReturnStats() {
                 let readings = viewModel.history
 
                 Chart {
@@ -45,7 +45,7 @@ struct HistoryChartView: View {
             viewModel.fetchHistory()
             cachedStats = computeStats()
         }
-        .onChange(of: viewModel.history) { _ in
+        .onChange(of: viewModel.history, initial: false) { _ in
             cachedStats = computeStats()
         }
     }
@@ -56,13 +56,23 @@ struct HistoryChartView: View {
         var tempMax = first.temperature
         var humMin = first.humidity
         var humMax = first.humidity
-        for reading in viewModel.history.dropFirst() {
-            tempMin = min(tempMin, reading.temperature)
-            tempMax = max(tempMax, reading.temperature)
-            humMin = min(humMin, reading.humidity)
-            humMax = max(humMax, reading.humidity)
+        if viewModel.history.count > 1 {
+            for i in 1..<viewModel.history.count {
+                let reading = viewModel.history[i]
+                tempMin = min(tempMin, reading.temperature)
+                tempMax = max(tempMax, reading.temperature)
+                humMin = min(humMin, reading.humidity)
+                humMax = max(humMax, reading.humidity)
+            }
         }
         return (tempMin, tempMax, humMin, humMax)
+    }
+
+    private func cacheAndReturnStats() -> (tempMin: Float, tempMax: Float, humMin: Float, humMax: Float)? {
+        if let cachedStats { return cachedStats }
+        let computed = computeStats()
+        cachedStats = computed
+        return cachedStats
     }
 }
 #endif
