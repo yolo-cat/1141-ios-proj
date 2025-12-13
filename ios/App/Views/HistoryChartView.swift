@@ -13,7 +13,7 @@ struct HistoryChartView: View {
 #if canImport(Charts)
             if viewModel.history.isEmpty {
                 Text("No history yet").foregroundColor(.secondary)
-            } else if let stats = cachedStats {
+            } else if let stats = cachedStats ?? computeStats() {
                 let readings = viewModel.history
 
                 Chart {
@@ -56,7 +56,7 @@ struct HistoryChartView: View {
         var tempMax = first.temperature
         var humMin = first.humidity
         var humMax = first.humidity
-        for reading in viewModel.history {
+        for reading in viewModel.history.dropFirst() {
             tempMin = min(tempMin, reading.temperature)
             tempMax = max(tempMax, reading.temperature)
             humMin = min(humMin, reading.humidity)
