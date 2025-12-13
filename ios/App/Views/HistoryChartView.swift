@@ -12,18 +12,8 @@ struct HistoryChartView: View {
 #if canImport(Charts)
             if viewModel.history.isEmpty {
                 Text("No history yet").foregroundColor(.secondary)
-            } else {
+            } else if let stats = historyStats {
                 let readings = viewModel.history
-                var tempMin = readings.first?.temperature ?? 0
-                var tempMax = tempMin
-                var humMin = readings.first?.humidity ?? 0
-                var humMax = humMin
-                for reading in readings {
-                    tempMin = min(tempMin, reading.temperature)
-                    tempMax = max(tempMax, reading.temperature)
-                    humMin = min(humMin, reading.humidity)
-                    humMax = max(humMax, reading.humidity)
-                }
 
                 Chart {
                     ForEach(viewModel.history) { reading in
@@ -42,7 +32,7 @@ struct HistoryChartView: View {
                 }
                 .chartLegend(.visible)
                 .accessibilityLabel("Temperature and humidity history chart")
-                .accessibilityValue("Showing \(readings.count) points. Temperature from \(tempMin, specifier: "%.1f") to \(tempMax, specifier: "%.1f") degrees. Humidity from \(humMin, specifier: "%.1f") to \(humMax, specifier: "%.1f") percent.")
+                .accessibilityValue("Showing \(readings.count) points. Temperature from \(stats.tempMin, specifier: "%.1f") to \(stats.tempMax, specifier: "%.1f") degrees. Humidity from \(stats.humMin, specifier: "%.1f") to \(stats.humMax, specifier: "%.1f") percent.")
             }
 #else
             Text("Charts framework not available in this environment.")
@@ -51,6 +41,21 @@ struct HistoryChartView: View {
         }
         .padding()
         .onAppear { viewModel.fetchHistory() }
+    }
+
+    private var historyStats: (tempMin: Float, tempMax: Float, humMin: Float, humMax: Float)? {
+        guard let first = viewModel.history.first else { return nil }
+        var tempMin = first.temperature
+        var tempMax = first.temperature
+        var humMin = first.humidity
+        var humMax = first.humidity
+        for reading in viewModel.history {
+            tempMin = min(tempMin, reading.temperature)
+            tempMax = max(tempMax, reading.temperature)
+            humMin = min(humMin, reading.humidity)
+            humMax = max(humMax, reading.humidity)
+        }
+        return (tempMin, tempMax, humMin, humMax)
     }
 }
 #endif
