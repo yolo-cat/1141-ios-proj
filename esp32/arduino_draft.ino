@@ -23,6 +23,7 @@ constexpr unsigned long MIN_DHT_INTERVAL_MS = 1000;
 constexpr size_t MAX_SECRET_LEN = 255;
 constexpr size_t MAX_URL_LEN = 256;
 constexpr size_t MAX_HEADER_LEN = 256;
+constexpr size_t JSON_DOC_CAPACITY = 200;
 
 DHTesp dht;
 WiFiClientSecure secureClient;
@@ -47,6 +48,9 @@ size_t boundedStrlen(const char *value, size_t maxLen) {
 }
 
 bool safeFormat(char *buffer, size_t bufferSize, const char *format, ...) {
+    if (buffer == nullptr || format == nullptr || bufferSize == 0) {
+        return false;
+    }
     va_list args;
     va_start(args, format);
     int written = vsnprintf(buffer, bufferSize, format, args);
@@ -55,14 +59,19 @@ bool safeFormat(char *buffer, size_t bufferSize, const char *format, ...) {
 }
 
 bool intervalElapsed(unsigned long last, unsigned long interval, unsigned long now) {
-    return last == 0 || static_cast<unsigned long>(now - last) >= interval;
+    return last == 0 || static_cast<uint32_t>(now - last) >= interval;
 }
 
 bool validateSecrets() {
-    return DEVICE_ID != nullptr && SUPABASE_ANON_KEY != nullptr && SUPABASE_URL != nullptr &&
-           boundedStrlen(DEVICE_ID, MAX_SECRET_LEN) > 0 && strncmp(DEVICE_ID, "YOUR_", 5) != 0 &&
-           boundedStrlen(SUPABASE_ANON_KEY, MAX_SECRET_LEN) > 0 && strncmp(SUPABASE_ANON_KEY, "YOUR_", 5) != 0 &&
-           boundedStrlen(SUPABASE_URL, MAX_SECRET_LEN) > 0 && strstr(SUPABASE_URL, "<PROJECT_REF>") == nullptr;
+    if (DEVICE_ID == nullptr || SUPABASE_ANON_KEY == nullptr || SUPABASE_URL == nullptr) {
+        return false;
+    }
+    size_t deviceLen = boundedStrlen(DEVICE_ID, MAX_SECRET_LEN);
+    size_t keyLen = boundedStrlen(SUPABASE_ANON_KEY, MAX_SECRET_LEN);
+    size_t urlLen = boundedStrlen(SUPABASE_URL, MAX_SECRET_LEN);
+    return deviceLen > 0 && strncmp(DEVICE_ID, "YOUR_", 5) != 0 &&
+           keyLen > 0 && strncmp(SUPABASE_ANON_KEY, "YOUR_", 5) != 0 &&
+           urlLen > 0 && strstr(SUPABASE_URL, "<PROJECT_REF>") == nullptr;
 }
 
 void configureTls() {
@@ -173,7 +182,7 @@ bool postReading(float temperature, float humidity) {
     }
     http.addHeader("Authorization", authHeader);
 
-    StaticJsonDocument<200> payload;
+    StaticJsonDocument<JSON_DOC_CAPACITY> payload;
     payload["device_id"] = DEVICE_ID;
     payload["temperature"] = temperature;
     payload["humidity"] = humidity;
