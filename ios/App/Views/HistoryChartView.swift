@@ -6,13 +6,14 @@ import Charts
 
 struct HistoryChartView: View {
     @ObservedObject var viewModel: SensorViewModel
+    @State private var cachedStats: (tempMin: Float, tempMax: Float, humMin: Float, humMax: Float)?
 
     var body: some View {
         VStack {
 #if canImport(Charts)
             if viewModel.history.isEmpty {
                 Text("No history yet").foregroundColor(.secondary)
-            } else if let stats = historyStats {
+            } else if let stats = cachedStats {
                 let readings = viewModel.history
 
                 Chart {
@@ -40,10 +41,16 @@ struct HistoryChartView: View {
 #endif
         }
         .padding()
-        .onAppear { viewModel.fetchHistory() }
+        .onAppear {
+            viewModel.fetchHistory()
+            cachedStats = computeStats()
+        }
+        .onChange(of: viewModel.history) { _ in
+            cachedStats = computeStats()
+        }
     }
 
-    private var historyStats: (tempMin: Float, tempMax: Float, humMin: Float, humMax: Float)? {
+    private func computeStats() -> (tempMin: Float, tempMax: Float, humMin: Float, humMax: Float)? {
         guard let first = viewModel.history.first else { return nil }
         var tempMin = first.temperature
         var tempMax = first.temperature
