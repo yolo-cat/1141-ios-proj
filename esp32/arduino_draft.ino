@@ -28,6 +28,9 @@ bool tlsConfigured = false;
 bool secretsReady = true;
 
 size_t boundedStrlen(const char *value, size_t maxLen) {
+    if (value == nullptr) {
+        return 0;
+    }
     size_t len = 0;
     while (len < maxLen && value[len] != '\0') {
         len++;
@@ -41,6 +44,10 @@ bool safeFormat(char *buffer, size_t bufferSize, const char *format, ...) {
     int written = vsnprintf(buffer, bufferSize, format, args);
     va_end(args);
     return written > 0 && written < static_cast<int>(bufferSize);
+}
+
+bool intervalElapsed(unsigned long last, unsigned long interval, unsigned long now) {
+    return last == 0 || static_cast<unsigned long>(now - last) >= interval;
 }
 
 void configureTls() {
@@ -103,7 +110,7 @@ void ensureWiFiConnected() {
 
 bool readSensor(float &temperature, float &humidity) {
     unsigned long now = millis();
-    if (lastDhtMs != 0 && now - lastDhtMs < MIN_DHT_INTERVAL_MS) {
+    if (!intervalElapsed(lastDhtMs, MIN_DHT_INTERVAL_MS, now)) {
         Serial.println("DHT11 read skipped: sampling too quickly.");
         return false;
     }
@@ -179,7 +186,8 @@ void setup() {
     dht.setup(DHT_PIN, DHTesp::DHT11);
     Serial.printf("DHT11 initialized on GPIO %d\n", DHT_PIN);
 
-    secretsReady = boundedStrlen(DEVICE_ID, MAX_SECRET_LEN) > 0 && strncmp(DEVICE_ID, "YOUR_", 5) != 0 &&
+    secretsReady = DEVICE_ID != nullptr && SUPABASE_ANON_KEY != nullptr && SUPABASE_URL != nullptr &&
+                   boundedStrlen(DEVICE_ID, MAX_SECRET_LEN) > 0 && strncmp(DEVICE_ID, "YOUR_", 5) != 0 &&
                    boundedStrlen(SUPABASE_ANON_KEY, MAX_SECRET_LEN) > 0 && strncmp(SUPABASE_ANON_KEY, "YOUR_", 5) != 0 &&
                    boundedStrlen(SUPABASE_URL, MAX_SECRET_LEN) > 0 && strstr(SUPABASE_URL, "<PROJECT_REF>") == nullptr;
     if (!secretsReady) {
@@ -198,7 +206,7 @@ void loop() {
     unsigned long interval = DEMO_MODE ? DEMO_INTERVAL_MS : STANDARD_INTERVAL_MS;
     unsigned long now = millis();
 
-    if (lastSendMs == 0 || now - lastSendMs >= interval) {
+    if (intervalElapsed(lastSendMs, interval, now)) {
         lastSendMs = now;
         float temperature;
         float humidity;
