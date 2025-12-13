@@ -13,7 +13,7 @@ final class SensorViewModel: ObservableObject {
     var alertHandler: (() -> Void)?
     private var alertActive = false
 
-    nonisolated(unsafe) private let manager: SupabaseManaging
+    private let manager: SupabaseManaging
 
     init(manager: SupabaseManaging = SupabaseManager.shared) {
         self.manager = manager

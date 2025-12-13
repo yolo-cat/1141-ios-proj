@@ -11,7 +11,7 @@ final class AuthViewModel: ObservableObject {
     @Published var statusMessage: String?
     @Published var sessionToken: String?
 
-    nonisolated(unsafe) private let manager: SupabaseManaging
+    private let manager: SupabaseManaging
 
     init(manager: SupabaseManaging = SupabaseManager.shared) {
         self.manager = manager

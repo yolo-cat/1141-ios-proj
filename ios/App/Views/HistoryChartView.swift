@@ -14,10 +14,16 @@ struct HistoryChartView: View {
                 Text("No history yet").foregroundColor(.secondary)
             } else {
                 let readings = viewModel.history
-                let tempMin = readings.map(\.temperature).min() ?? 0
-                let tempMax = readings.map(\.temperature).max() ?? 0
-                let humMin = readings.map(\.humidity).min() ?? 0
-                let humMax = readings.map(\.humidity).max() ?? 0
+                var tempMin = readings.first?.temperature ?? 0
+                var tempMax = tempMin
+                var humMin = readings.first?.humidity ?? 0
+                var humMax = humMin
+                for reading in readings {
+                    tempMin = min(tempMin, reading.temperature)
+                    tempMax = max(tempMax, reading.temperature)
+                    humMin = min(humMin, reading.humidity)
+                    humMax = max(humMax, reading.humidity)
+                }
 
                 Chart {
                     ForEach(viewModel.history) { reading in
