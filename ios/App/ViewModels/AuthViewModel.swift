@@ -1,15 +1,17 @@
+/// 2025-12-13: 改用 @Observable 並改成 async supabase 呼叫。
 #if canImport(Foundation)
 import Foundation
-import Combine
+import Observation
 
 @MainActor
-final class AuthViewModel: ObservableObject {
-    @Published var email: String = ""
-    @Published var password: String = ""
-    @Published var isLoading: Bool = false
-    @Published var errorMessage: String?
-    @Published var statusMessage: String?
-    @Published var sessionToken: String?
+@Observable
+final class AuthViewModel {
+    var email: String = ""
+    var password: String = ""
+    var isLoading: Bool = false
+    var errorMessage: String?
+    var statusMessage: String?
+    var sessionToken: String?
 
     private let manager: SupabaseManaging
 
@@ -22,14 +24,17 @@ final class AuthViewModel: ObservableObject {
         errorMessage = nil
         statusMessage = nil
         isLoading = true
-        manager.signIn(email: email, password: password) { [weak self] result in
+        Task { [weak self] in
             guard let self else { return }
-            Task { @MainActor in
-                self.isLoading = false
-                switch result {
-                case .success:
+            do {
+                try await self.manager.signIn(email: self.email, password: self.password)
+                await MainActor.run {
                     self.sessionToken = self.manager.sessionToken
-                case .failure(let error):
+                    self.isLoading = false
+                }
+            } catch {
+                await MainActor.run {
+                    self.isLoading = false
                     self.errorMessage = error.localizedDescription
                 }
             }
@@ -40,14 +45,17 @@ final class AuthViewModel: ObservableObject {
         errorMessage = nil
         statusMessage = nil
         isLoading = true
-        manager.signUp(email: email, password: password) { [weak self] result in
+        Task { [weak self] in
             guard let self else { return }
-            Task { @MainActor in
-                self.isLoading = false
-                switch result {
-                case .success:
+            do {
+                try await self.manager.signUp(email: self.email, password: self.password)
+                await MainActor.run {
+                    self.isLoading = false
                     self.statusMessage = "Sign up succeeded. Please sign in after verification."
-                case .failure(let error):
+                }
+            } catch {
+                await MainActor.run {
+                    self.isLoading = false
                     self.errorMessage = error.localizedDescription
                 }
             }

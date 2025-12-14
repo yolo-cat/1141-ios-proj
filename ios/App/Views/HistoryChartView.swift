@@ -1,11 +1,13 @@
+/// 2025-12-13: 修正 onChange 簽名並維持 Observation 綁定。
 #if canImport(SwiftUI)
 import SwiftUI
+import Observation
 #if canImport(Charts)
 import Charts
 #endif
 
 struct HistoryChartView: View {
-    @ObservedObject var viewModel: SensorViewModel
+    @Bindable var viewModel: SensorViewModel
     @State private var cachedStats: (tempMin: Float, tempMax: Float, humMin: Float, humMax: Float)?
 
     var body: some View {
@@ -59,9 +61,9 @@ struct HistoryChartView: View {
         }
         .padding()
         .onAppear {
-            viewModel.fetchHistory()
+            viewModel.fetchDefaultHistory()
         }
-        .onChange(of: viewModel.history, initial: false) { _ in
+        .onChange(of: viewModel.history, initial: false) { _, _ in
             cachedStats = computeStats()
         }
     }

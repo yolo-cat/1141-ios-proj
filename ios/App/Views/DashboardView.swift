@@ -1,8 +1,10 @@
+/// 2025-12-13: 改用 Observation 綁定並更新版本註釋。
 #if canImport(SwiftUI)
 import SwiftUI
+import Observation
 
 struct DashboardView: View {
-    @ObservedObject var viewModel: SensorViewModel
+    @Bindable var viewModel: SensorViewModel
 
     var body: some View {
         VStack(spacing: 16) {

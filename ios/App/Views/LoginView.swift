@@ -1,11 +1,14 @@
+/// 2025-12-13: 改用 Observation 環境注入並新增版本註釋。
 #if canImport(SwiftUI)
 import SwiftUI
+import Observation
 
 struct LoginView: View {
-    @EnvironmentObject var authViewModel: AuthViewModel
+    @Environment(AuthViewModel.self) private var authViewModel
     @State private var isSignUp = false
 
     var body: some View {
+        @Bindable var authViewModel = authViewModel
         VStack(spacing: 16) {
             Text("TeaWarehouse")
                 .font(.largeTitle)

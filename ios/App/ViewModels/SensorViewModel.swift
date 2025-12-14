@@ -1,22 +1,35 @@
+/// 2025-12-13: 對接 async SupabaseManaging 並保持 @Observable。
 #if canImport(Foundation)
 import Foundation
+import Observation
 
 @MainActor
-final class SensorViewModel: ObservableObject {
-    @Published var currentReading: Reading?
-    @Published var history: [Reading] = []
-    @Published var isSubscribed: Bool = false
-    @Published var lastAlertAt: Date?
+@Observable
+final class SensorViewModel {
+    var currentReading: Reading?
+    var history: [Reading] = []
+    var isSubscribed: Bool = false
+    var lastAlertAt: Date?
 
-    var temperatureThreshold: Float = StageConfig.temperatureThreshold
-    var humidityThreshold: Float = StageConfig.humidityThreshold
+    var temperatureThreshold: Float
+    var humidityThreshold: Float
     var alertHandler: (() -> Void)?
     private var alertActive = false
 
     private let manager: SupabaseManaging
 
-    init(manager: SupabaseManaging = SupabaseManager.shared) {
+    init(
+        manager: SupabaseManaging,
+        temperatureThreshold: Float = StageConfig.temperatureThreshold,
+        humidityThreshold: Float = StageConfig.humidityThreshold
+    ) {
         self.manager = manager
+        self.temperatureThreshold = temperatureThreshold
+        self.humidityThreshold = humidityThreshold
+    }
+
+    static func makeDefault() -> SensorViewModel {
+        SensorViewModel(manager: SupabaseManager.shared)
     }
 
     func startListening() {
@@ -35,15 +48,20 @@ final class SensorViewModel: ObservableObject {
         isSubscribed = false
     }
 
-    func fetchHistory(limit: Int = StageConfig.historyLimit) {
-        manager.fetchHistory(limit: limit) { [weak self] result in
-            Task { @MainActor in
-                switch result {
-                case .success(let records):
-                    self?.history = records.sorted { $0.createdAt < $1.createdAt }
-                case .failure:
-                    self?.history = []
+    func fetchDefaultHistory() {
+        fetchHistory(limit: StageConfig.historyLimit)
+    }
+
+    func fetchHistory(limit: Int) {
+        Task { [weak self] in
+            guard let self else { return }
+            do {
+                let records = try await manager.fetchHistory(limit: limit)
+                await MainActor.run {
+                    self.history = records.sorted { $0.createdAt < $1.createdAt }
                 }
+            } catch {
+                await MainActor.run { self.history = [] }
             }
         }
     }
