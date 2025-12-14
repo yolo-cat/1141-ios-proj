@@ -1,4 +1,4 @@
-/// 2025-12-13: 修正 onChange 簽名並維持 Observation 綁定。
+/// 2025-12-14: 新增 HistoryChart #Preview 預覽。
 #if canImport(SwiftUI)
 import SwiftUI
 import Observation
@@ -89,5 +89,58 @@ struct HistoryChartView: View {
         cachedStats = computed
         return computed
     }
+}
+
+#Preview {
+    HistoryChartView(viewModel: .previewHistory)
+}
+
+private extension SensorViewModel {
+    static var previewHistory: SensorViewModel {
+        let manager = MockSupabaseManager()
+        let viewModel = SensorViewModel(manager: manager)
+        let now = Date()
+        viewModel.history = [
+            Reading(id: 1, createdAt: now.addingTimeInterval(-300), deviceId: "tea_room_01", temperature: 21.2, humidity: 55.0),
+            Reading(id: 2, createdAt: now.addingTimeInterval(-180), deviceId: "tea_room_01", temperature: 22.4, humidity: 56.5),
+            Reading(id: 3, createdAt: now.addingTimeInterval(-60), deviceId: "tea_room_01", temperature: 23.1, humidity: 57.8)
+        ]
+        return viewModel
+    }
+}
+
+private final class MockSupabaseManager: SupabaseManaging {
+    var sessionToken: String? = nil
+
+    func signIn(email: String, password: String) async throws {}
+    func signUp(email: String, password: String) async throws {}
+    func fetchHistory(limit: Int) async throws -> [Reading] {
+        let now = Date()
+        let samples: [Reading] = [
+            Reading(id: 1, createdAt: now.addingTimeInterval(-300), deviceId: "tea_room_01", temperature: 21.2, humidity: 55.0),
+            Reading(id: 2, createdAt: now.addingTimeInterval(-180), deviceId: "tea_room_01", temperature: 22.4, humidity: 56.5),
+            Reading(id: 3, createdAt: now.addingTimeInterval(-60), deviceId: "tea_room_01", temperature: 23.1, humidity: 57.8)
+        ]
+        return Array(samples.prefix(limit))
+    }
+    func signOut() {}
+
+    func signIn(email: String, password: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        completion(.success(()))
+    }
+
+    func signUp(email: String, password: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        completion(.success(()))
+    }
+
+    func fetchHistory(limit: Int, completion: @escaping (Result<[Reading], Error>) -> Void) {
+        Task { @MainActor in
+            let readings = try? await fetchHistory(limit: limit)
+            completion(.success(readings ?? []))
+        }
+    }
+
+    func subscribeToReadings(onInsert: @escaping (Reading) -> Void) {}
+    func unsubscribeFromReadings() {}
 }
 #endif

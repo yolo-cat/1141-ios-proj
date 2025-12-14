@@ -1,4 +1,4 @@
-/// 2025-12-13: 改用 Observation 綁定並更新版本註釋。
+/// 2025-12-14: 新增 Dashboard #Preview 預覽。
 #if canImport(SwiftUI)
 import SwiftUI
 import Observation
@@ -50,5 +50,49 @@ struct DashboardView: View {
         formatter.timeStyle = .short
         return formatter.string(from: date)
     }
+}
+
+#Preview {
+    DashboardView(viewModel: .preview)
+}
+
+private extension SensorViewModel {
+    static var preview: SensorViewModel {
+        let manager = MockSupabaseManager()
+        let viewModel = SensorViewModel(manager: manager)
+        viewModel.currentReading = Reading(
+            id: 1,
+            createdAt: Date(),
+            deviceId: "tea_room_01",
+            temperature: 22.5,
+            humidity: 58.3
+        )
+        viewModel.isSubscribed = true
+        return viewModel
+    }
+}
+
+private final class MockSupabaseManager: SupabaseManaging {
+    var sessionToken: String? = nil
+
+    func signIn(email: String, password: String) async throws {}
+    func signUp(email: String, password: String) async throws {}
+    func fetchHistory(limit: Int) async throws -> [Reading] { [] }
+    func signOut() {}
+
+    func signIn(email: String, password: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        completion(.success(()))
+    }
+
+    func signUp(email: String, password: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        completion(.success(()))
+    }
+
+    func fetchHistory(limit: Int, completion: @escaping (Result<[Reading], Error>) -> Void) {
+        completion(.success([]))
+    }
+
+    func subscribeToReadings(onInsert: @escaping (Reading) -> Void) {}
+    func unsubscribeFromReadings() {}
 }
 #endif
