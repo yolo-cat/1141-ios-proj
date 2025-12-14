@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C78F176A2EEF2EDB00ED9CA1 /* Supabase.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = C78F17692EEF2EDB00ED9CA1 /* Supabase.xcconfig */; };
 		C79AF7962EEDD995008088F6 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = C79AF7932EEDD995008088F6 /* README.md */; };
 		C79AF7972EEDD995008088F6 /* AGENTS.md in Resources */ = {isa = PBXBuildFile; fileRef = C79AF7902EEDD995008088F6 /* AGENTS.md */; };
 		C79AF7982EEDD995008088F6 /* DESIGN_IOS_STAGE_1.md in Resources */ = {isa = PBXBuildFile; fileRef = C79AF7912EEDD995008088F6 /* DESIGN_IOS_STAGE_1.md */; };
@@ -28,7 +29,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		C79AF72E2EEDD802008088F6 /* ios.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ios.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C78F17422EEF239E00ED9CA1 /* ios.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = ios.app; path = "/Users/joseph-m2/Dev/1141-iOS-adv/1141-ios-proj/ios/build/Debug-iphoneos/ios.app"; sourceTree = "<absolute>"; };
+		C78F17432EEF23BC00ED9CA1 /* ios-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "ios-Info.plist"; sourceTree = "<group>"; };
+		C78F17692EEF2EDB00ED9CA1 /* Supabase.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Supabase.xcconfig; sourceTree = "<group>"; };
 		C79AF7902EEDD995008088F6 /* AGENTS.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = AGENTS.md; sourceTree = "<group>"; };
 		C79AF7912EEDD995008088F6 /* DESIGN_IOS_STAGE_1.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = DESIGN_IOS_STAGE_1.md; sourceTree = "<group>"; };
 		C79AF7922EEDD995008088F6 /* PRD_IOS_STAGE_1.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = PRD_IOS_STAGE_1.md; sourceTree = "<group>"; };
@@ -71,23 +74,16 @@
 		C79AF7252EEDD802008088F6 = {
 			isa = PBXGroup;
 			children = (
+				C78F17432EEF23BC00ED9CA1 /* ios-Info.plist */,
 				C79AF7302EEDD802008088F6 /* app */,
-				C79AF72F2EEDD802008088F6 /* Products */,
 				C79AF7902EEDD995008088F6 /* AGENTS.md */,
 				C79AF7912EEDD995008088F6 /* DESIGN_IOS_STAGE_1.md */,
 				C79AF7922EEDD995008088F6 /* PRD_IOS_STAGE_1.md */,
 				C79AF7932EEDD995008088F6 /* README.md */,
 				C79AF7942EEDD995008088F6 /* TASKS_IOS_STAGE_1.md */,
 				C79AF7952EEDD995008088F6 /* TEST_IOS_STAGE1.md */,
+				C78F17692EEF2EDB00ED9CA1 /* Supabase.xcconfig */,
 			);
-			sourceTree = "<group>";
-		};
-		C79AF72F2EEDD802008088F6 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				C79AF72E2EEDD802008088F6 /* ios.app */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -124,7 +120,7 @@
 				C79AF7B52EEED91C008088F6 /* CasePathsCore */,
 			);
 			productName = ios;
-			productReference = C79AF72E2EEDD802008088F6 /* ios.app */;
+			productReference = C78F17422EEF239E00ED9CA1 /* ios.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -143,11 +139,12 @@
 				};
 			};
 			buildConfigurationList = C79AF7292EEDD802008088F6 /* Build configuration list for PBXProject "ios" */;
-			developmentRegion = en;
+			developmentRegion = "zh-Hant";
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 				Base,
+				"zh-Hant",
 			);
 			mainGroup = C79AF7252EEDD802008088F6;
 			minimizedProjectReferenceProxies = 1;
@@ -157,7 +154,7 @@
 				C79AF7B22EEED91C008088F6 /* XCRemoteSwiftPackageReference "swift-case-paths" */,
 			);
 			preferredProjectObjectVersion = 77;
-			productRefGroup = C79AF72F2EEDD802008088F6 /* Products */;
+			productRefGroup = C79AF7252EEDD802008088F6;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -174,6 +171,7 @@
 				C79AF7962EEDD995008088F6 /* README.md in Resources */,
 				C79AF7972EEDD995008088F6 /* AGENTS.md in Resources */,
 				C79AF7982EEDD995008088F6 /* DESIGN_IOS_STAGE_1.md in Resources */,
+				C78F176A2EEF2EDB00ED9CA1 /* Supabase.xcconfig in Resources */,
 				C79AF7992EEDD995008088F6 /* TEST_IOS_STAGE1.md in Resources */,
 				C79AF79A2EEDD995008088F6 /* TASKS_IOS_STAGE_1.md in Resources */,
 				C79AF79B2EEDD995008088F6 /* PRD_IOS_STAGE_1.md in Resources */,
@@ -195,6 +193,7 @@
 /* Begin XCBuildConfiguration section */
 		C79AF7372EEDD803008088F6 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = C78F17692EEF2EDB00ED9CA1 /* Supabase.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -246,7 +245,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -259,6 +258,7 @@
 		};
 		C79AF7382EEDD803008088F6 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = C78F17692EEF2EDB00ED9CA1 /* Supabase.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -304,7 +304,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -316,6 +316,7 @@
 		};
 		C79AF73A2EEDD803008088F6 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = C78F17692EEF2EDB00ED9CA1 /* Supabase.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -324,6 +325,7 @@
 				DEVELOPMENT_TEAM = 74S8T9684C;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "ios-Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -352,6 +354,7 @@
 		};
 		C79AF73B2EEDD803008088F6 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = C78F17692EEF2EDB00ED9CA1 /* Supabase.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -360,6 +363,7 @@
 				DEVELOPMENT_TEAM = 74S8T9684C;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "ios-Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

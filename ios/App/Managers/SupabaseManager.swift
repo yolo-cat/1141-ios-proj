@@ -152,14 +152,16 @@ final class SupabaseManager: SupabaseManaging {
     // MARK: - Client factory
 
     private static func makeClient() -> SupabaseClient {
-        let env = ProcessInfo.processInfo.environment
         guard
-            let urlString = env["SUPABASE_URL"],
-            let key = env["SUPABASE_KEY"],
+            let urlString = ProcessInfo.processInfo.environment["SUPABASE_URL"],
+            let key = ProcessInfo.processInfo.environment["SUPABASE_KEY"],
             let url = URL(string: urlString),
             !key.isEmpty
         else {
             fatalError("Missing SUPABASE_URL or SUPABASE_KEY in environment.")
+        }
+        guard let host = url.host, !host.isEmpty else {
+            fatalError("Invalid SUPABASE_URL: host is missing or empty")
         }
         return SupabaseClient(supabaseURL: url, supabaseKey: key)
     }
