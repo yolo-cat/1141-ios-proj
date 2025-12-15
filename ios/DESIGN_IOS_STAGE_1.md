@@ -13,3 +13,9 @@
    - `HistoryChartView` 使用 Swift Charts 呈現歷史雙折線。
 
 執行步驟與細節請參考 [`TASKS_IOS_STAGE_1.md`](TASKS_IOS_STAGE_1.md) 與 `AGENTS.md`。
+
+## 代碼對應（Stage 1 骨架）
+- App 入口：`App/TeaWarehouseApp.swift` 與 `App/Views/RootView.swift`
+- 模型與管理：`App/Models/Reading.swift`、`App/Managers/SupabaseManager.swift`
+- ViewModels：`App/ViewModels/AuthViewModel.swift`、`App/ViewModels/SensorViewModel.swift`
+- 視圖：`App/Views/LoginView.swift`、`App/Views/DashboardView.swift`、`App/Views/HistoryChartView.swift`

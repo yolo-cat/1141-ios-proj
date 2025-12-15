@@ -1,2 +1,7 @@
 /.idea/
 merge_branch.sh
+ios/.DS_Store
+ios/Secrets.xcconfig
+.DS_Store
+ios/Supabase.xcconfig
+ios/ios-Info.plist
