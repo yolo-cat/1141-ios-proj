@@ -12,7 +12,7 @@
 
 **針對 ESP32 (Arduino) — device_id 採用 PRD 範例:**
 
-> "Write an Arduino sketch for ESP32 with DHT11 connected to GPIO 15. It needs to connect to WiFi, read sensor data every 10 seconds, and POST a JSON payload `{'device_id': 'tea_room_01', 'temperature': ..., 'humidity': ...}` to a Supabase REST API endpoint. Use `HTTPClient` and `ArduinoJson`. Handle WiFi reconnection."
+> "Write an Arduino sketch for ESP32 with DHT11 connected to GPIO 32. It needs to connect to WiFi, read sensor data every 10 seconds, and POST a JSON payload `{'device_id': 'tea_room_01', 'temperature': ..., 'humidity': ...}` to a Supabase REST API endpoint. Use `HTTPClient` and `ArduinoJson`. Handle WiFi reconnection."
 
 **針對 iOS (SwiftUI):**
 
