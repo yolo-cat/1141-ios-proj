@@ -3,7 +3,7 @@
 本指引協助 AI Agent 以最小改動完成 ESP32 韌體的 stage-1 開發，需與根目錄 `AGENTS.md` 與 `PRD_STAGE1.md` 保持一致（摘要見 `PRD_ESP32_STAGE_1.md`），任一文件更新時請同步檢查本檔與 `TASKS_ESP32_STAGE_1.md`。
 
 ## 任務目標
-- 以 ESP32 + DHT11（GPIO 15）讀取溫溼度，並透過 Supabase REST API 上傳。
+- 以 ESP32 + DHT11（GPIO 32）讀取溫溼度，並透過 Supabase REST API 上傳。
 - 標準週期每 5 分鐘讀取；Demo 模式 10 秒。若讀取為 NaN 則跳過上傳。
 - 送出 JSON：`{"device_id":<string>,"temperature":<float>,"humidity":<float>}`，`device_id` 以可設定常數（範例值 `tea_room_01`）提供；HTTP Header 包含 `apikey` 與 `Authorization: Bearer <anon key>`。
 

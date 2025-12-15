@@ -1,10 +1,3 @@
-/*
- * ESP32 DHT11 感測器資料上傳至 Supabase REST API
- * 此程式碼用於 ESP32 開發板，連接 DHT11 感測器，定期讀取溫度和濕度資料，
- * 並透過 HTTPS POST 請求將資料上傳至 Supabase 資料庫。
- * 支援 Wi-Fi 自動重連、TLS 安全連線，以及錯誤處理機制。
- */
-
 #include <ArduinoJson.h>
 #include <DHTesp.h>
 #include <HTTPClient.h>
@@ -20,30 +13,27 @@
 
 #include "secrets.h"
 
-// 定義常數
-constexpr int DHT_PIN = 32; // DHT11 感測器連接的 GPIO 腳位
-constexpr bool DEMO_MODE = false; // 是否啟用示範模式（縮短間隔）
-constexpr unsigned long STANDARD_INTERVAL_MS = 5UL * 60UL * 1000UL; // 標準上傳間隔（5 分鐘）
-constexpr unsigned long DEMO_INTERVAL_MS = 10UL * 1000UL; // 示範模式上傳間隔（10 秒）
-constexpr unsigned long HTTP_TIMEOUT_MS = 15000; // HTTP 請求超時時間（毫秒）
-constexpr int WIFI_MAX_RETRIES = 40; // Wi-Fi 連線最大重試次數
-constexpr unsigned long MIN_DHT_INTERVAL_MS = 1000; // DHT11 讀取最小間隔（避免過快取樣）
-constexpr unsigned long RETRY_INTERVAL_MS = 30000; // 上傳失敗後重試間隔（毫秒）
-constexpr size_t MAX_SECRET_LEN = 255; // 秘密字串最大長度
-constexpr size_t MAX_URL_LEN = 256; // URL 字串最大長度
-constexpr size_t MAX_HEADER_LEN = 256; // HTTP 標頭最大長度
-constexpr size_t JSON_DOC_CAPACITY = 200; // JSON 文件容量
+constexpr int DHT_PIN = 32;
+constexpr bool DEMO_MODE = false;
+constexpr unsigned long STANDARD_INTERVAL_MS = 5UL * 60UL * 1000UL;
+constexpr unsigned long DEMO_INTERVAL_MS = 10UL * 1000UL;
+constexpr unsigned long HTTP_TIMEOUT_MS = 15000;
+constexpr int WIFI_MAX_RETRIES = 40;
+constexpr unsigned long MIN_DHT_INTERVAL_MS = 1000;
+constexpr unsigned long RETRY_INTERVAL_MS = 30000;
+constexpr size_t MAX_SECRET_LEN = 255;
+constexpr size_t MAX_URL_LEN = 256;
+constexpr size_t MAX_HEADER_LEN = 256;
+constexpr size_t JSON_DOC_CAPACITY = 200;
 
-// 全域變數
-DHTesp dht; // DHT11 感測器物件
-WiFiClientSecure secureClient; // 安全 Wi-Fi 客戶端
-unsigned long lastSendMs = 0; // 上次上傳時間戳記
-unsigned long lastDhtMs = 0; // 上次 DHT11 讀取時間戳記
-unsigned long nextDueMs = 0; // 下次重試時間戳記
-bool tlsConfigured = false; // TLS 是否已配置
-bool secretsReady = false; // 秘密是否準備就緒
+DHTesp dht;
+WiFiClientSecure secureClient;
+unsigned long lastSendMs = 0;
+unsigned long lastDhtMs = 0;
+unsigned long nextDueMs = 0;
+bool tlsConfigured = false;
+bool secretsReady = false;
 
-// 計算字串長度，限制最大長度
 size_t boundedStrlen(const char *value, size_t maxLen) {
     if (value == nullptr) {
         return 0;
@@ -59,7 +49,6 @@ size_t boundedStrlen(const char *value, size_t maxLen) {
 #endif
 }
 
-// 安全格式化字串，避免緩衝區溢位
 bool safeFormat(char *buffer, size_t bufferSize, const char *format, ...) {
     if (buffer == nullptr || format == nullptr || bufferSize == 0) {
         return false;
@@ -71,12 +60,10 @@ bool safeFormat(char *buffer, size_t bufferSize, const char *format, ...) {
     return written >= 0 && written < static_cast<int>(bufferSize);
 }
 
-// 檢查時間間隔是否已過
 bool intervalElapsed(unsigned long last, unsigned long interval, unsigned long now) {
     return last == 0 || static_cast<uint32_t>(now - last) >= interval;
 }
 
-// 驗證秘密字串是否有效（非預設值）
 bool validateSecrets() {
     if (DEVICE_ID == nullptr || SUPABASE_ANON_KEY == nullptr || SUPABASE_URL == nullptr) {
         return false;
@@ -89,7 +76,6 @@ bool validateSecrets() {
            urlLen > 0 && strstr(SUPABASE_URL, "<PROJECT_REF>") == nullptr;
 }
 
-// 配置 TLS 安全連線
 void configureTls() {
     secureClient.setTimeout(HTTP_TIMEOUT_MS);
     tlsConfigured = false;
@@ -114,7 +100,6 @@ void configureTls() {
     }
 }
 
-// 連線至 Wi-Fi
 void connectWiFi() {
     if (WiFi.status() == WL_CONNECTED) {
         return;
@@ -142,7 +127,6 @@ void connectWiFi() {
     }
 }
 
-// 確保 Wi-Fi 連線
 void ensureWiFiConnected() {
     if (WiFi.status() != WL_CONNECTED) {
         Serial.println("Wi-Fi disconnected; attempting reconnection.");
@@ -150,7 +134,6 @@ void ensureWiFiConnected() {
     }
 }
 
-// 讀取 DHT11 感測器資料
 bool readSensor(float &temperature, float &humidity) {
     unsigned long now = millis();
     if (!intervalElapsed(lastDhtMs, MIN_DHT_INTERVAL_MS, now)) {
@@ -170,7 +153,6 @@ bool readSensor(float &temperature, float &humidity) {
     return true;
 }
 
-// 將讀取資料 POST 至 Supabase
 bool postReading(float temperature, float humidity) {
     if (WiFi.status() != WL_CONNECTED) {
         Serial.println("Cannot POST: Wi-Fi not connected.");
@@ -222,7 +204,6 @@ bool postReading(float temperature, float humidity) {
     return httpStatus >= 200 && httpStatus < 300;
 }
 
-// 初始化設定
 void setup() {
     Serial.begin(115200);
     delay(200);
@@ -256,7 +237,6 @@ void setup() {
     lastSendMs = 0;
 }
 
-// 主迴圈
 void loop() {
     ensureWiFiConnected();
 
