@@ -1,4 +1,6 @@
 merge_branch.sh
 .DS_Store
-ios/ios-Info.plist
+ios/.DS_Store
+ios/Secrets.xcconfig
 ios/Supabase.xcconfig
+ios/ios-Info.plist
