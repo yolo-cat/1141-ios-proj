@@ -1,2 +1,4 @@
 /.idea/
 merge_branch.sh
+ios/ios-Info.plist
+ios/Supabase.xcconfig
