@@ -6,11 +6,23 @@ import Observation
 @main
 struct TeaWarehouseApp: App {
     @State private var authViewModel = AuthViewModel()
+    @State private var sensorViewModel = SensorViewModel.makeDefault()
 
     var body: some Scene {
         WindowGroup {
-            RootView()
-                .environment(authViewModel)
+            Group {
+                if authViewModel.sessionToken == nil {
+                    LoginView()
+                } else {
+                    TabView {
+                        DashboardView(viewModel: sensorViewModel)
+                            .tabItem { Label("Dashboard", systemImage: "waveform.path.ecg") }
+                        HistoryChartView(viewModel: sensorViewModel)
+                            .tabItem { Label("History", systemImage: "chart.line.uptrend.xyaxis") }
+                    }
+                }
+            }
+            .environment(authViewModel)
         }
     }
 }
