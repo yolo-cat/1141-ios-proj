@@ -14,12 +14,7 @@ struct TeaWarehouseApp: App {
                 if authViewModel.sessionToken == nil {
                     LoginView()
                 } else {
-                    TabView {
-                        DashboardView(viewModel: sensorViewModel)
-                            .tabItem { Label("Dashboard", systemImage: "waveform.path.ecg") }
-                        HistoryChartView(viewModel: sensorViewModel)
-                            .tabItem { Label("History", systemImage: "chart.line.uptrend.xyaxis") }
-                    }
+                    DashboardView(viewModel: sensorViewModel)
                 }
             }
             .environment(authViewModel)
