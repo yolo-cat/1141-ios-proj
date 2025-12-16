@@ -1,10 +1,17 @@
-/// 2025-12-14: 修復檔案開頭誤植 Markdown 語法導致的編譯錯誤。
+/*
+ 檔案說明：
+ DashboardView.swift
+ 普洱茶倉環境監控系統主儀表板畫面，負責顯示即時感測數據、歷史圖表、設備狀態與管理入口。
+ 使用 SwiftUI，支援 iOS 17+，結合 MVVM 架構。
+*/
+
 #if canImport(SwiftUI)
 import SwiftUI
 import Charts
 import Observation
 
-// MARK: - Color Palette (Tailwind Stone Approximation)
+
+/// Tailwind Stone 色票擴充，統一 UI 色彩
 extension Color {
     static let stone50 = Color(red: 250/255, green: 250/255, blue: 249/255)
     static let stone100 = Color(red: 245/255, green: 245/255, blue: 244/255)
@@ -18,11 +25,14 @@ extension Color {
     static let stone900 = Color(red: 28/255, green: 25/255, blue: 23/255)
 }
 
+/// 主儀表板畫面，顯示感測數據、圖表與設備狀態
 struct DashboardView: View {
+    /// 感測資料 ViewModel，負責資料綁定
     @Bindable var viewModel: SensorViewModel
+    /// 當前選取的分頁索引（圖表/設備卡片切換用）
     @State private var activeTab = 0
 
-    // Mock Devices for UI demo (since VM doesn't have device list yet)
+    /// 假資料：設備清單（尚未串接 VM 時使用）
     let devices = [
         DeviceInfo(id: "ESP-01", location: "Section A", status: .online, battery: 85),
         DeviceInfo(id: "ESP-02", location: "Section B", status: .online, battery: 72),
@@ -30,13 +40,14 @@ struct DashboardView: View {
         DeviceInfo(id: "ESP-04", location: "Floor", status: .online, battery: 45)
     ]
 
+    /// 主畫面內容，包含 Header、Bento Grid、滑動卡片區、Footer
     var body: some View {
         ZStack(alignment: .bottom) {
-            // Background
+            // 背景色
             Color.stone50.ignoresSafeArea()
 
             VStack(spacing: 0) {
-                // 1. Header
+                // 1. 頁首區塊
                 headerView
                     .padding(.top, 8)
                     .padding(.bottom, 16)
@@ -45,24 +56,25 @@ struct DashboardView: View {
 
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 24) {
-                        // 2. Bento Grid: Metrics & Alerts
+                        // 2. Bento Grid：即時數據與警示
                         bentoGrid
                             .padding(.horizontal, 24)
 
-                        // 3. Swipeable Cards Container
+                        // 3. 滑動卡片（圖表/設備）
                         swipeableCardsSection
 
-                        // Bottom padding for floating footer
+                        // 浮動 Footer 預留空間
                         Color.clear.frame(height: 100)
                     }
                     .padding(.vertical)
                 }
             }
 
-            // 4. Footer: Warehouse Management
+            // 4. 頁尾：倉庫管理按鈕
             footerView
         }
         .onAppear {
+            // 畫面出現時啟動資料監聽與預設歷史查詢
             viewModel.startListening()
             viewModel.fetchDefaultHistory()
         }
@@ -70,9 +82,10 @@ struct DashboardView: View {
 
     // MARK: - Subviews
 
+    /// 頁首區塊：品牌、地點切換、使用者頭像
     private var headerView: some View {
         HStack {
-            // Left: Branding
+            // 左：品牌名稱
             Text("PU'ER SENSE")
                 .font(.caption)
                 .fontWeight(.bold)
@@ -81,7 +94,7 @@ struct DashboardView: View {
 
             Spacer()
 
-            // Center: Location Switcher
+            // 中：地點切換按鈕
             Button(action: {}) {
                 HStack(spacing: 4) {
                     Text("Menghai Depot")
@@ -100,7 +113,7 @@ struct DashboardView: View {
 
             Spacer()
 
-            // Right: User Profile
+            // 右：使用者頭像
             Button(action: {}) {
                 Circle()
                     .fill(Color.stone200)
@@ -119,9 +132,10 @@ struct DashboardView: View {
         .padding(.horizontal, 24)
     }
 
+    /// Bento Grid：即時溫濕度與警示卡片
     private var bentoGrid: some View {
         HStack(spacing: 16) {
-            // Metric Card
+            // 溫度/濕度數據卡
             VStack(alignment: .leading) {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading) {
@@ -157,7 +171,7 @@ struct DashboardView: View {
             .cornerRadius(32)
             .shadow(color: Color.black.opacity(0.05), radius: 20, x: 0, y: 4)
 
-            // Alert Card
+            // 警示卡片
             VStack(alignment: .leading) {
                 HStack {
                     Text("STATUS")
@@ -189,9 +203,10 @@ struct DashboardView: View {
         }
     }
 
+    /// 滑動卡片區：歷史圖表與設備清單
     private var swipeableCardsSection: some View {
         VStack(spacing: 12) {
-            // Section Header
+            // 區塊標題與分頁指示點
             HStack {
                 Text("Analytics")
                     .font(.headline)
@@ -207,7 +222,7 @@ struct DashboardView: View {
             }
             .padding(.horizontal, 24)
 
-            // Horizontal Scroll
+            // 橫向滑動卡片（TabView）
             TabView(selection: $activeTab) {
                 ChartCard(
                     title: "Temperature History",
@@ -240,6 +255,7 @@ struct DashboardView: View {
         }
     }
 
+    /// 頁尾管理按鈕
     private var footerView: some View {
         Button(action: {}) {
             HStack(spacing: 12) {
@@ -262,14 +278,22 @@ struct DashboardView: View {
 
 // MARK: - Helper Components
 
+/// 單一圖表卡片元件，顯示溫度或濕度歷史資料
 struct ChartCard: View {
+    /// 卡片標題
     let title: String
+    /// 副標題
     let subtitle: String
+    /// SF Symbol 圖示名稱
     let iconName: String
+    /// 主色
     let color: Color
+    /// 資料來源（數值陣列）
     let data: [Float]
+    /// 單位字串
     let unit: String
 
+    /// 是否顯示清單模式
     @State private var showList = false
 
     var body: some View {
@@ -365,7 +389,9 @@ struct ChartCard: View {
     }
 }
 
+/// 設備清單卡片，顯示所有感測裝置狀態
 struct DeviceListCard: View {
+    /// 設備資料陣列
     let devices: [DeviceInfo]
 
     var body: some View {
@@ -445,12 +471,18 @@ struct DeviceListCard: View {
     }
 }
 
+/// 感測裝置資訊結構
 struct DeviceInfo: Identifiable {
+    /// 裝置唯一 ID
     let id: String
+    /// 安裝位置
     let location: String
+    /// 狀態（上線/離線）
     let status: Status
+    /// 電池電量百分比
     let battery: Int
 
+    /// 裝置狀態列舉
     enum Status {
         case online, offline
     }
@@ -461,6 +493,7 @@ struct DeviceInfo: Identifiable {
 }
 
 // MARK: - Preview Helpers
+/// 預覽用 ViewModel，提供假資料給 SwiftUI Preview
 private extension SensorViewModel {
     static var preview: SensorViewModel {
         let manager = MockSupabaseManager()
@@ -486,6 +519,7 @@ private extension SensorViewModel {
     }
 }
 
+/// 假 Supabase 管理器，專供 Preview 或測試用，不實際連線
 private final class MockSupabaseManager: SupabaseManaging {
     var sessionToken: String? = nil
     func signIn(email: String, password: String) async throws {}
