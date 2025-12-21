@@ -4,3 +4,4 @@ ios/.DS_Store
 ios/Secrets.xcconfig
 ios/Supabase.xcconfig
 ios/ios-Info.plist
+*.code-workspace
