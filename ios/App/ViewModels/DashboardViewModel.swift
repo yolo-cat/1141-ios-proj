@@ -123,6 +123,8 @@
             }
           }
         } catch {
+          // DEBUG: Log error for diagnosis
+          print("❌ [DashboardViewModel] fetchHistory error: \(error)")
           await MainActor.run { self.history = [] }
         }
       }

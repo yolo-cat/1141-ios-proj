@@ -58,7 +58,24 @@
 
     private static var supabaseDecoder: JSONDecoder {
       let decoder = JSONDecoder()
-      decoder.dateDecodingStrategy = .iso8601
+      // Supabase returns dates with fractional seconds (e.g., "2024-01-01T12:00:00.123456+00:00")
+      // We need a custom formatter that handles this.
+      let formatter = ISO8601DateFormatter()
+      formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+      decoder.dateDecodingStrategy = .custom { decoder in
+        let container = try decoder.singleValueContainer()
+        let dateString = try container.decode(String.self)
+        if let date = formatter.date(from: dateString) {
+          return date
+        }
+        // Fallback for dates without fractional seconds
+        formatter.formatOptions = [.withInternetDateTime]
+        if let date = formatter.date(from: dateString) {
+          return date
+        }
+        throw DecodingError.dataCorruptedError(
+          in: container, debugDescription: "Cannot decode date: \(dateString)")
+      }
       return decoder
     }
 
