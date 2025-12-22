@@ -1,7 +1,7 @@
 /*
  * File: DashboardView.swift
  * Purpose: Main dashboard UI displaying real-time sensor data, charts, and device status.
- * Architecture: SwiftUI View using @Bindable for DashboardViewModel. Features Bento Grid layout.
+ * Architecture: SwiftUI View using @Bindable for DashboardViewModel. Features Neo-Bento Grid layout.
  * AI Context: UI-only. All business/alert logic should stay in DashboardViewModel.
  */
 
@@ -10,409 +10,311 @@
   import Charts
   import Observation
 
-  /// Tailwind Stone 色票擴充，統一 UI 色彩
-  extension Color {
-    static let stone50 = Color(red: 250 / 255, green: 250 / 255, blue: 249 / 255)
-    static let stone100 = Color(red: 245 / 255, green: 245 / 255, blue: 244 / 255)
-    static let stone200 = Color(red: 231 / 255, green: 229 / 255, blue: 228 / 255)
-    static let stone300 = Color(red: 214 / 255, green: 211 / 255, blue: 209 / 255)
-    static let stone400 = Color(red: 168 / 255, green: 162 / 255, blue: 158 / 255)
-    static let stone500 = Color(red: 120 / 255, green: 113 / 255, blue: 108 / 255)
-    static let stone600 = Color(red: 87 / 255, green: 83 / 255, blue: 78 / 255)
-    static let stone700 = Color(red: 68 / 255, green: 64 / 255, blue: 60 / 255)
-    static let stone800 = Color(red: 41 / 255, green: 37 / 255, blue: 36 / 255)
-    static let stone900 = Color(red: 28 / 255, green: 25 / 255, blue: 23 / 255)
-  }
+  // MARK: - Dashboard View
 
-  /// 主儀表板畫面，顯示感測數據、圖表與設備狀態
   struct DashboardView: View {
-    /// 感測資料 ViewModel，負責資料綁定
     @Bindable var viewModel: DashboardViewModel
-    /// 當前選取的分頁索引（圖表/設備卡片切換用）
     @State private var activeTab = 0
 
-    /// 所有感測裝置（由 ViewModel 提供）
-    private var devices: [DashboardViewModel.DeviceInfo] {
-      viewModel.devices
+    // Grouped history by device ID
+    private var groupedHistory: [String: [Reading]] {
+      Dictionary(grouping: viewModel.history, by: { $0.deviceId })
     }
 
-    /// 主畫面內容，包含 Header、Bento Grid、滑動卡片區、Footer
+    private var activeDeviceIds: [String] {
+      Array(groupedHistory.keys).sorted()
+    }
+
     var body: some View {
       ZStack(alignment: .bottom) {
-        // 背景色
-        Color.stone50.ignoresSafeArea()
+        // Global Canvas Background
+        DesignSystem.Colors.canvas.ignoresSafeArea()
 
         VStack(spacing: 0) {
-          // 1. 頁首區塊
+          // 1. New Header (Bold & Minimal)
           headerView
             .padding(.top, 8)
             .padding(.bottom, 16)
-            .background(Color.stone50.opacity(0.8))
-            .background(.ultraThinMaterial)
+            .padding(.horizontal, 24)
 
           ScrollView(showsIndicators: false) {
             VStack(spacing: 24) {
-              // 2. Bento Grid：即時數據與警示
-              bentoGrid
+              // 2. Neo-Bento Grid: Hero & Status
+              bentoGridSection
                 .padding(.horizontal, 24)
 
-              // 3. 滑動卡片（圖表/設備）
-              swipeableCardsSection
+              // 3. Unified Climate Cards (Newest First List)
+              cardsSection
 
-              // 浮動 Footer 預留空間 (防止遮擋)
-              Color.clear.frame(height: 180)
+              // Footer Space
+              Color.clear.frame(height: 100)
             }
             .padding(.vertical)
           }
         }
 
-        // 4. 頁尾：倉庫管理按鈕
+        // 4. Floating Footer
         footerView
       }
       .onAppear {
-        // 畫面出現時啟動資料監聽與預設歷史查詢
         viewModel.startListening()
         viewModel.fetchDefaultHistory()
       }
     }
 
-    // MARK: - Subviews
+    // MARK: - Main Sections
 
-    /// 頁首區塊：品牌、地點切換、使用者頭像
     private var headerView: some View {
-      HStack {
-        // 左：品牌名稱
-        Text("PU'ER SENSE")
-          .font(.caption)
-          .fontWeight(.bold)
-          .tracking(2)
-          .foregroundColor(.stone400)
+      HStack(alignment: .center) {
+        Text("DASHBOARD")
+          .font(DesignSystem.Typography.header)
+          .foregroundColor(DesignSystem.Colors.textSecondary)
+          .opacity(0.8)
 
         Spacer()
 
-        // 中：地點切換按鈕
+        // Depot Switcher (Capsule)
         Button(action: {}) {
-          HStack(spacing: 4) {
-            Text("勐海倉庫")
-              .font(.subheadline)
-              .fontWeight(.bold)
-              .foregroundColor(.stone700)
+          HStack(spacing: 6) {
+            Text("Menghai Depot")
+              .font(.subheadline.bold())
             Image(systemName: "chevron.down")
-              .font(.caption)
-              .foregroundColor(.stone400)
+              .font(.caption.bold())
           }
+          .foregroundColor(DesignSystem.Colors.textSecondary)
           .padding(.horizontal, 16)
           .padding(.vertical, 8)
-          .background(Color.stone100)
+          .background(DesignSystem.Colors.cardStandard)
           .clipShape(Capsule())
+          .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
         }
 
-        Spacer()
-
-        // 右：使用者頭像
-        Button(action: {}) {
-          Circle()
-            .fill(Color.stone200)
-            .frame(width: 40, height: 40)
-            .overlay(
-              Image(systemName: "person.fill")
-                .foregroundColor(.stone400)
-            )
-            .overlay(
-              Circle()
-                .stroke(Color.white, lineWidth: 2)
-            )
-            .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
-        }
+        // User Avatar
+        Circle()
+          .fill(DesignSystem.Colors.cardStandard)
+          .frame(width: 44, height: 44)
+          .overlay(
+            Image(systemName: "person.crop.circle.fill")
+              .font(.title2)
+              .foregroundColor(DesignSystem.Colors.textSecondary)
+          )
+          .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
       }
-      .padding(.horizontal, 24)
     }
 
-    /// Bento Grid：即時溫濕度與警示卡片
-    private var bentoGrid: some View {
-      HStack(spacing: 16) {
-        // 溫度/濕度數據卡
+    // MARK: - Bento Grid
+
+    private var bentoGridSection: some View {
+      VStack(spacing: DesignSystem.Layout.gridSpacing) {
+        // Row 1: Hero Card (Spans Full Width)
+        HeroDataCard(reading: viewModel.currentReading)
+          .frame(height: 220)
+
+        // Row 2: Status & Context (Split)
+        HStack(spacing: DesignSystem.Layout.gridSpacing) {
+          StatusCard(alertType: viewModel.alertType)
+          ContextCard(reading: viewModel.currentReading)
+        }
+        .frame(height: 160)
+      }
+    }
+
+    private var cardsSection: some View {
+      VStack(spacing: 24) {
+        // Section Title
+        HStack {
+          Text("HISTORY")
+            .font(DesignSystem.Typography.label())
+            .foregroundColor(DesignSystem.Colors.textSecondary)
+          Spacer()
+        }
+        .padding(.horizontal, 24)
+
+        // Content
+        if activeDeviceIds.isEmpty {
+          ContentUnavailableView("No Data", systemImage: "chart.bar.xaxis")
+        } else {
+          ForEach(Array(activeDeviceIds.enumerated()), id: \.element) { index, deviceId in
+            let deviceInfo = viewModel.devices.first(where: { $0.id == deviceId })
+            UnifiedClimateCard(
+              deviceId: deviceId,
+              location: deviceInfo?.location ?? "Unknown",
+              status: deviceInfo?.status ?? .offline,
+              battery: deviceInfo?.battery ?? 0,
+              readings: groupedHistory[deviceId] ?? []
+            )
+            .padding(.horizontal, 24)
+          }
+        }
+      }
+    }
+
+    private var footerView: some View {
+      Button(action: {}) {
+        HStack {
+          Image(systemName: "building.2.fill")
+          Text("Manage Warehouse")
+            .fontWeight(.bold)
+        }
+        .foregroundColor(.white)
+        .padding(.horizontal, 24)
+        .padding(.vertical, 16)
+        .background(DesignSystem.Colors.primary)
+        .clipShape(Capsule())
+        .shadow(color: DesignSystem.Colors.primary.opacity(0.3), radius: 10, x: 0, y: 5)
+      }
+      .padding(.bottom, 24)
+    }
+  }
+
+  // MARK: - Sub Components
+
+  /// 1. Hero Data Card (High Saturation)
+  struct HeroDataCard: View {
+    let reading: Reading?
+
+    var body: some View {
+      ZStack(alignment: .leading) {
+        // High Saturation Background
+        DesignSystem.Colors.primary
+
+        // Decorators (Abstract Shapes)
+        GeometryReader { geo in
+          Circle()
+            .fill(Color.white.opacity(0.1))
+            .frame(width: 200, height: 200)
+            .offset(x: geo.size.width - 100, y: -50)
+
+          Circle()  // Live Dot
+            .fill(Color.green)
+            .frame(width: 8, height: 8)
+            .padding(24)
+            .frame(maxWidth: .infinity, alignment: .topTrailing)
+            .shadow(color: .green.opacity(0.5), radius: 5)
+        }
+
         VStack(alignment: .leading) {
-          // Time Row
-          if let date = viewModel.currentReading?.createdAt {
-            HStack(spacing: 4) {
-              Image(systemName: "clock")
-              Text(date, format: .dateTime.hour(.twoDigits(amPM: .omitted)).minute())
-            }
-            .font(.system(size: 10, weight: .bold, design: .monospaced))
-            .foregroundColor(.stone400)
+          // Label
+          HStack {
+            Text("CURRENT")
+              .font(DesignSystem.Typography.label())
+              .foregroundColor(.white.opacity(0.8))
           }
 
           Spacer()
 
-          // Temp Row
-          HStack(spacing: 12) {
-            Image(systemName: "thermometer.medium")
-              .font(.title2)
-              .foregroundColor(.orange.opacity(0.8))
-              .frame(width: 24)
-
-            VStack(alignment: .leading, spacing: 0) {
-              Text("\(Int(viewModel.currentReading?.temperature ?? 0))°")
-                .font(.system(size: 32, weight: .bold, design: .rounded))
-                .foregroundColor(.stone800)
-              Text("溫度")
-                .font(.system(size: 10, weight: .medium))
-                .foregroundColor(.stone400)
-            }
+          // Big Number
+          HStack(alignment: .firstTextBaseline, spacing: 4) {
+            Text("\(Int(reading?.temperature ?? 0))°")
+              .font(DesignSystem.Typography.heroNumber)
+              .foregroundColor(.white)
+            Text("C")
+              .font(.title2.bold())
+              .foregroundColor(.white.opacity(0.6))
           }
 
           Spacer()
 
           // Humidity Row
-          HStack(spacing: 12) {
-            Image(systemName: "drop.fill")
-              .font(.title2)
-              .foregroundColor(.blue.opacity(0.8))
-              .frame(width: 24)
-
-            VStack(alignment: .leading, spacing: 0) {
-              Text("\(Int(viewModel.currentReading?.humidity ?? 0))%")
-                .font(.system(size: 32, weight: .bold, design: .rounded))
-                .foregroundColor(.stone800)
-              Text("濕度")
-                .font(.system(size: 10, weight: .medium))
-                .foregroundColor(.stone400)
-            }
-          }
-        }
-        .padding(20)
-        .frame(height: 160)
-        .background(Color.white)
-        .cornerRadius(32)
-        .shadow(color: Color.black.opacity(0.05), radius: 20, x: 0, y: 4)
-
-        // 異常警報卡片 component
-        ExceptionAlertCard(alertType: viewModel.alertType)
-      }
-    }
-
-    /// 滑動卡片區：歷史圖表與設備清單
-    /// 按 deviceId 分組的數據
-    private var groupedHistory: [String: [Reading]] {
-      Dictionary(grouping: viewModel.history, by: { $0.deviceId })
-    }
-
-    /// 排序後的裝置 ID 列表
-    private var activeDeviceIds: [String] {
-      Array(groupedHistory.keys).sorted()
-    }
-
-    /// 總分頁數 (僅包含裝置數量)
-    private var totalTabs: Int {
-      activeDeviceIds.count
-    }
-
-    private var swipeableCardsSection: some View {
-      VStack(spacing: 0) {
-        // 區塊標題與分頁指示點
-        HStack {
-          Text("歷史紀錄")
-            .font(.headline)
-            .foregroundColor(.stone700)
-          Spacer()
-          HStack(spacing: 6) {
-            ForEach(0..<totalTabs, id: \.self) { index in
-              Circle()
-                .fill(activeTab == index ? Color.stone800 : Color.stone300)
-                .frame(width: 6, height: 6)
-            }
-          }
-        }
-        .padding(.horizontal, 24)
-
-        // 橫向滑動卡片（TabView）
-        TabView(selection: $activeTab) {
-          // 為每個裝置顯示一張整合卡片
-          let deviceIds = activeDeviceIds
-          ForEach(Array(deviceIds.enumerated()), id: \.offset) { index, deviceId in
-            // 查找該裝置的狀態資訊
-            let deviceInfo = devices.first(where: { $0.id == deviceId })
-
-            UnifiedClimateCard(
-              deviceId: deviceId,
-              location: deviceInfo?.location ?? "未知地點",
-              status: deviceInfo?.status ?? .offline,
-              battery: deviceInfo?.battery ?? 0,
-              readings: groupedHistory[deviceId] ?? []
-            )
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            .tag(index)
-            .padding(.horizontal, 24)
-          }
-        }
-        .tabViewStyle(.page(indexDisplayMode: .never))
-        .frame(height: 520)
-      }
-    }
-
-    /// 頁尾管理按鈕
-    private var footerView: some View {
-      Button(action: {}) {
-        HStack(spacing: 12) {
-          Image(systemName: "building.2.fill")
-            .foregroundColor(.stone300)
-          Text("管理倉庫")
-            .fontWeight(.semibold)
-        }
-        .foregroundColor(.stone50)
-        .padding(.horizontal, 24)
-        .padding(.vertical, 16)
-        .background(Color.stone900.opacity(0.9))
-        .background(.ultraThinMaterial)
-        .clipShape(Capsule())
-        .shadow(color: Color.black.opacity(0.2), radius: 20, x: 0, y: 10)
-      }
-      .padding(.bottom, 16)
-    }
-  }
-
-  // MARK: - Helper Components
-
-  /// 統一的圖表容器，提供背景、邊框與標準化標題
-  /// 對應 React: ChartContainer
-  struct ChartContainer<Content: View>: View {
-    let config: ChartConfig
-    let content: () -> Content
-
-    init(config: ChartConfig, @ViewBuilder content: @escaping () -> Content) {
-      self.config = config
-      self.content = content
-    }
-
-    var body: some View {
-      VStack(alignment: .leading, spacing: 16) {
-        // Header
-        if let title = config.title {
           HStack(spacing: 8) {
-            if let iconData = config.icon {
-              Image(systemName: iconData.0)
-                .foregroundColor(config.colors[iconData.1] ?? .stone800)
-            }
-            Text(title)
-              .font(.headline)
-              .fontWeight(.bold)
-              .foregroundColor(.stone800)
-
-            Spacer()
-
-            if let trailing = config.trailingView {
-              trailing
-            }
+            Image(systemName: "drop.fill")
+              .symbolRenderingMode(.multicolor)
+              .font(.title3)
+            Text("\(Int(reading?.humidity ?? 0))%")
+              .font(.title2.bold())
+              .foregroundColor(.white)
+            Text("Humidity")
+              .font(.caption.bold())
+              .foregroundColor(.white.opacity(0.6))
           }
-          .layoutPriority(1)  // Prevent header compression
         }
-
-        if let subtitle = config.subtitle {
-          Text(subtitle)
-            .font(.subheadline)
-            .foregroundColor(.stone400)
-            .padding(.top, -12)  // Slightly closer to title
-        }
-
-        // Content
-        content()
+        .padding(DesignSystem.Layout.padding)
       }
-      .padding(20)
-      .background(Color.white)
-      .cornerRadius(32)  // Rounded-xl equivalent
-      .overlay(
-        RoundedRectangle(cornerRadius: 32)
-          .stroke(Color.stone200, lineWidth: 1)
-      )
-      .shadow(color: Color.black.opacity(0.05), radius: 12, x: 0, y: 4)
+      .neoBentoCard(color: .clear)  // Base modifier
     }
   }
 
-  struct ChartConfig {
-    var title: String?
-    var subtitle: String?
-    var icon: (String, String)?  // (SystemName, ColorKey)
-    var colors: [String: Color]
-    var trailingView: AnyView?
-  }
-
-  /// 異常警報卡片組件 (Ambient Aura)
-  /// 使用動態漸層背景提供情緒化的狀態回饋
-  struct ExceptionAlertCard: View {
+  /// 2. Status Card (3D Icon)
+  struct StatusCard: View {
     let alertType: DashboardViewModel.AlertType
 
     var body: some View {
-      ZStack(alignment: .leading) {
-        // Ambient Background
-        LinearGradient(
-          colors: alertType.isCritical
-            ? [Color.red.opacity(0.15), Color.orange.opacity(0.15)]  // Alert: 暖色調
-            : [Color.blue.opacity(0.08), Color.mint.opacity(0.1)],  // Normal: 清新冷色調
-          startPoint: .topLeading,
-          endPoint: .bottomTrailing
+      VStack {
+        Spacer()
+
+        // Icon
+        Image(
+          systemName: alertType.isCritical ? "exclamationmark.triangle.fill" : "checkmark.seal.fill"
         )
+        .font(.system(size: 48))
+        .foregroundStyle(
+          alertType.isCritical
+            ? LinearGradient(colors: [.orange, .red], startPoint: .top, endPoint: .bottom)
+            : LinearGradient(colors: [.green, .mint], startPoint: .top, endPoint: .bottom)
+        )
+        .shadow(color: alertType.isCritical ? .red.opacity(0.3) : .green.opacity(0.2), radius: 10)
 
-        VStack(alignment: .leading, spacing: 12) {
-          // Top Row: Icon
-          HStack {
-            Image(systemName: alertType.isCritical ? "exclamationmark.triangle.fill" : "leaf.fill")
-              .font(.system(size: 28))
-              .symbolRenderingMode(.hierarchical)
-              .foregroundColor(alertType.isCritical ? .red : .mint)
-              .background(
-                Circle()
-                  .fill(Color.white.opacity(0.6))
-                  .frame(width: 48, height: 48)
-                  .shadow(color: .black.opacity(0.02), radius: 5, x: 0, y: 2)
-              )
+        Spacer()
 
-            Spacer()
-
-            // Subtle Status Text
-            Text(alertType.isCritical ? "ALERT" : "NORMAL")
-              .font(.caption)
-              .fontWeight(.bold)
-              .tracking(2)
-              .foregroundColor(alertType.isCritical ? .red.opacity(0.6) : .teal.opacity(0.6))
-          }
-          .padding(.bottom, 4)
-
-          Spacer()
-
-          // Main Text Content
-          VStack(alignment: .leading, spacing: 4) {
-            Text(alertType.isCritical ? "系統異常" : "環境良好")
-              .font(.system(.title2, design: .rounded))
-              .fontWeight(.bold)
-              .foregroundColor(.stone800)
-
-            Text(alertType.description)
-              .font(.subheadline)
-              .fontWeight(.medium)
-              .foregroundColor(.stone500)
-              .lineLimit(2)
-              .fixedSize(horizontal: false, vertical: true)
-          }
-        }
-        .padding(24)
+        // Text
+        Text(alertType.isCritical ? "ALERT" : "NORMAL")
+          .font(DesignSystem.Typography.label())
+          .foregroundColor(
+            alertType.isCritical ? DesignSystem.Colors.danger : DesignSystem.Colors.accentB
+          )
+          .padding(.bottom, 8)
       }
-      .frame(height: 160)
-      .background(Color.white)  // Fallback/Base
-      .cornerRadius(32)
-      .shadow(
-        color: alertType.isCritical ? Color.red.opacity(0.1) : Color.black.opacity(0.05),
-        radius: 20, x: 0, y: 10
-      )
-      .overlay(
-        RoundedRectangle(cornerRadius: 32)
-          .stroke(alertType.isCritical ? Color.red.opacity(0.2) : Color.clear, lineWidth: 1)
-      )
-      .animation(.easeInOut(duration: 0.5), value: alertType.isCritical)
+      .frame(maxWidth: .infinity)
+      .neoBentoCard()
     }
   }
 
-  /// 整合環境數據卡片，顯示單一裝置的溫濕度歷史與狀態
+  /// 3. Context Card (Outline Style)
+  struct ContextCard: View {
+    let reading: Reading?
+
+    var body: some View {
+      VStack(alignment: .leading) {
+        HStack {
+          Text("UPDATED")
+            .font(DesignSystem.Typography.label())
+            .foregroundColor(DesignSystem.Colors.textSecondary)
+          Spacer()
+          Image(systemName: "clock")
+            .font(.caption)
+            .foregroundColor(DesignSystem.Colors.textSecondary)
+        }
+
+        Spacer()
+
+        if let date = reading?.createdAt {
+          VStack(alignment: .leading) {
+            Text(date, format: .dateTime.hour().minute())
+              .font(.system(size: 28, weight: .bold, design: .rounded))
+              .foregroundColor(DesignSystem.Colors.primary)
+            Text(date, format: .dateTime.month().day())
+              .font(.caption.bold())
+              .foregroundColor(DesignSystem.Colors.textSecondary)
+          }
+        } else {
+          Text("--:--")
+            .font(.title.bold())
+            .foregroundColor(.secondary)
+        }
+
+        Spacer()
+      }
+      .padding(DesignSystem.Layout.padding)
+      .frame(maxWidth: .infinity)
+      .background(Color.clear)
+      .overlay(
+        RoundedRectangle(cornerRadius: DesignSystem.Layout.cornerRadius)
+          .stroke(DesignSystem.Colors.textSecondary.opacity(0.2), lineWidth: 4)
+      )
+    }
+  }
+
+  /// 4. Unified Climate Card (Clean Chart + Zebra List)
   struct UnifiedClimateCard: View {
     let deviceId: String
     let location: String
@@ -421,385 +323,140 @@
     let readings: [Reading]
 
     @State private var showList = false
-    @State private var selectedDate: Date? = nil
-    @State private var selectedReading: Reading? = nil
-
-    // Colors map (Theming)
-    private let colors: [String: Color] = [
-      "temp": .orange,
-      "humid": .blue,
-    ]
 
     var body: some View {
-      let lastReading = readings.max(by: { $0.createdAt < $1.createdAt })
-
-      let headerConfig = ChartConfig(
-        title: deviceId,
-        subtitle: location,
-        icon: ("cpu", "temp"),  // Placeholder icon
-        colors: colors,
-        trailingView: AnyView(
-          HStack {
-            // Status Indicators
-            HStack(spacing: 4) {
-              Circle()
-                .fill(status == .online ? Color.green : Color.stone300)
-                .frame(width: 8, height: 8)
-
-              if status == .online {
-                Image(systemName: battery < 20 ? "battery.25" : "battery.100")
-                  .foregroundColor(battery < 20 ? .red : .stone400)
-                  .font(.caption2)
-                Text("\(battery)%")
-                  .font(.caption2)
-                  .foregroundColor(.stone400)
-              } else {
-                Image(systemName: "wifi.slash")
-                  .foregroundColor(.stone400)
-                  .font(.caption2)
-              }
-            }
-            .padding(.trailing, 8)
-
-            Button(action: { withAnimation { showList.toggle() } }) {
-              Image(systemName: showList ? "chart.xyaxis.line" : "list.bullet")
-                .font(.system(size: 14))
-                .padding(8)
-                .foregroundColor(.stone500)
-                .background(Color.stone100)
-                .clipShape(Circle())
-            }
-          }
-        )
-      )
-
-      ChartContainer(config: headerConfig) {
-        VStack(alignment: .leading, spacing: 10) {
-
-          if showList {
-            // List View
-            listView(readings: readings)
-              .frame(height: 350)
-          } else {
-            // Chart View
-            chartView(readings: readings)
-              .frame(height: 200)  // Keep chart height reasonable
-
-            Divider()
-              .padding(.vertical, 2)
-
-            // Big Metrics (Current / Selected)
-            HStack(spacing: 24) {
-              let displayReading = selectedReading ?? lastReading
-
-              // Temperature
-              VStack(alignment: .leading, spacing: 2) {
-                Text("溫度")
-                  .font(.caption)
-                  .fontWeight(.medium)
-                  .foregroundColor(.stone400)
-                HStack(alignment: .firstTextBaseline, spacing: 4) {
-                  Text(String(format: "%.1f", displayReading?.temperature ?? 0))
-                    .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundColor(.stone800)
-                  Text("°C")
-                    .font(.callout)
-                    .foregroundColor(.stone400)
-                }
-              }
-              .padding(.leading, 8)
-              .overlay(alignment: .leading) {
-                Rectangle().fill(colors["temp"]!).frame(width: 4).cornerRadius(2).padding(
-                  .leading, -8)
-              }
-
-              // Humidity
-              VStack(alignment: .leading, spacing: 2) {
-                Text("濕度")
-                  .font(.caption)
-                  .fontWeight(.medium)
-                  .foregroundColor(.stone400)
-                HStack(alignment: .firstTextBaseline, spacing: 4) {
-                  Text(String(format: "%.0f", displayReading?.humidity ?? 0))
-                    .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundColor(.stone800)
-                  Text("%")
-                    .font(.callout)
-                    .foregroundColor(.stone400)
-                }
-              }
-              .padding(.leading, 8)
-              .overlay(alignment: .leading) {
-                Rectangle().fill(colors["humid"]!).frame(width: 4).cornerRadius(2).padding(
-                  .leading, -8)
-              }
-
-              Spacer()
-
-              // Time
-              if let date = displayReading?.createdAt {
-                VStack(alignment: .trailing) {
-                  Text(date, format: .dateTime.hour().minute())
-                    // .font(.title3)
-                    .font(.system(size: 20, weight: .bold))  // Prevent font jumping
-                    .fontWeight(.bold)
-                    .foregroundColor(.stone600)
-                  Text(date, format: .dateTime.month().day())
-                    .font(.caption)
-                    .foregroundColor(.stone400)
-                }
-              }
-            }
-            .padding(.bottom, 8)
-          }
-        }
-      }
-    }
-
-    @ViewBuilder
-    private func listView(readings: [Reading]) -> some View {
-      let sortedData = readings.sorted { $0.createdAt > $1.createdAt }
-      List(Array(sortedData.enumerated()), id: \.element.id) { index, item in
+      VStack(spacing: 0) {
+        // Header
         HStack {
-          Text(item.createdAt, format: .dateTime.hour().minute())
-            .font(.system(.caption, design: .monospaced))
-            .foregroundColor(.stone500)
+          VStack(alignment: .leading, spacing: 2) {
+            Text(location)
+              .font(DesignSystem.Typography.cardTitle)
+              .foregroundColor(DesignSystem.Colors.textSecondary)
+            Text(deviceId)
+              .font(.caption.bold())
+              .padding(.horizontal, 8)
+              .padding(.vertical, 4)
+              .background(Color.gray.opacity(0.1))
+              .clipShape(Capsule())
+              .foregroundColor(.secondary)
+          }
 
           Spacer()
 
-          HStack(spacing: 16) {
-            HStack(spacing: 4) {
-              Image(systemName: "thermometer.medium")
-                .foregroundColor(colors["temp"])
-              Text(String(format: "%.1f°", item.temperature))
-                .fixedSize()
-                .lineLimit(1)
-            }
-            .frame(width: 85, alignment: .leading)
-
-            HStack(spacing: 4) {
-              Image(systemName: "drop.fill")
-                .foregroundColor(colors["humid"])
-              Text(String(format: "%.0f%%", item.humidity))
-                .fixedSize()
-                .lineLimit(1)
-            }
-            .frame(width: 75, alignment: .leading)
+          Button(action: { withAnimation { showList.toggle() } }) {
+            Image(systemName: showList ? "chart.xyaxis.line" : "list.bullet")
+              .font(.title3)
+              .foregroundColor(DesignSystem.Colors.primary)
+              .padding(10)
+              .background(DesignSystem.Colors.primary.opacity(0.1))
+              .clipShape(Circle())
           }
-          .font(.system(.callout, design: .monospaced))
         }
-        .listRowSeparator(.hidden)
-        .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
-      }
-      .listStyle(.plain)
-    }
+        .padding(20)
 
-    @ViewBuilder
-    private func chartView(readings: [Reading]) -> some View {
-      let chartData = readings.sorted { $0.createdAt < $1.createdAt }
+        Divider()
 
-      Chart {
-        ForEach(chartData) { item in
-          // Ambient Temperature Area (Gradient)
-          AreaMark(
-            x: .value("Time", item.createdAt),
-            y: .value("Temp", item.temperature)
-          )
-          .interpolationMethod(.catmullRom)
-          .foregroundStyle(
-            LinearGradient(
-              colors: [colors["temp"]!.opacity(0.1), colors["temp"]!.opacity(0.01)],
-              startPoint: .top,
-              endPoint: .bottom
-            )
-          )
-
-          // Temperature Line
-          LineMark(
-            x: .value("Time", item.createdAt),
-            y: .value("Temp", item.temperature),
-            series: .value("Metric", "Temperature")
-          )
-          .interpolationMethod(.catmullRom)
-          .foregroundStyle(colors["temp"]!)
-          // .symbol(Circle()) // Clean look
-          // .symbolSize(0)
-
-          // Humidity Line (Dashed)
-          LineMark(
-            x: .value("Time", item.createdAt),
-            y: .value("Humidity", item.humidity),
-            series: .value("Metric", "Humidity")
-          )
-          .interpolationMethod(.catmullRom)
-          .foregroundStyle(colors["humid"]!)
-          .lineStyle(StrokeStyle(lineWidth: 2, dash: [5, 3]))
-
-          // Selection Rule
-          if let selectedDate,
-            let currentItem = selectedReading,
-            currentItem.id == item.id
-          {  // Simple check, or find closest
-
-            RuleMark(x: .value("Selected", selectedDate))
-              .lineStyle(StrokeStyle(lineWidth: 2, dash: [5, 5]))
-              .foregroundStyle(Color.stone400.opacity(0.5))
-
-            PointMark(
+        // Content
+        if showList {
+          // Zebra List
+          VStack(spacing: 0) {
+            let sorted = readings.sorted { $0.createdAt > $1.createdAt }.prefix(5)
+            ForEach(Array(sorted.enumerated()), id: \.element.id) { index, item in
+              HStack {
+                Text(item.createdAt, format: .dateTime.hour().minute())
+                  .font(.system(.callout, design: .monospaced))
+                  .foregroundColor(.secondary)
+                Spacer()
+                HStack(spacing: 12) {
+                  Text("\(String(format: "%.1f", item.temperature))°")
+                    .fontWeight(.bold)
+                    .foregroundColor(DesignSystem.Colors.primary)
+                  Text("\(String(format: "%.0f", item.humidity))%")
+                    .fontWeight(.medium)
+                    .foregroundColor(.blue)
+                }
+                .font(.system(.body, design: .monospaced))
+              }
+              .padding(.horizontal, 20)
+              .padding(.vertical, 12)
+              .background(index % 2 == 0 ? Color.clear : Color.gray.opacity(0.05))
+            }
+          }
+          .padding(.bottom, 16)
+        } else {
+          // Clean Chart
+          Chart(readings.sorted(by: { $0.createdAt < $1.createdAt })) { item in
+            LineMark(
               x: .value("Time", item.createdAt),
               y: .value("Temp", item.temperature)
             )
-            .foregroundStyle(colors["temp"]!)
-            .symbolSize(60)
-            .annotation(position: .top) {
-              // Inline annotation if needed, or rely on the big metrics update
-            }
+            .interpolationMethod(.catmullRom)
+            .foregroundStyle(DesignSystem.Colors.primary)
+            .lineStyle(StrokeStyle(lineWidth: 3))
 
-            PointMark(
+            AreaMark(
               x: .value("Time", item.createdAt),
-              y: .value("Humidity", item.humidity)
+              y: .value("Temp", item.temperature)
             )
-            .foregroundStyle(colors["humid"]!)
-            .symbolSize(60)
-          }
-        }
-      }
-      .chartYScale(domain: .automatic(includesZero: false))
-      .chartXAxis {
-        AxisMarks(values: .automatic(desiredCount: 5)) { value in
-          if value.as(Date.self) != nil {
-            AxisValueLabel(format: .dateTime.hour(.defaultDigits(amPM: .omitted)).minute())
-              .foregroundStyle(Color.stone400)
-          }
-        }
-      }
-      .chartYAxis {
-        AxisMarks(position: .leading)
-      }
-      .chartOverlay { proxy in
-        GeometryReader { geometry in
-          Rectangle().fill(.clear).contentShape(Rectangle())
-            .gesture(
-              DragGesture(minimumDistance: 0)
-                .onChanged { value in
-                  let x = value.location.x
-                  if let date: Date = proxy.value(atX: x) {
-                    selectedDate = date
-                    // Find closest reading
-                    if let reading = readings.min(by: {
-                      abs($0.createdAt.timeIntervalSince(date))
-                        < abs($1.createdAt.timeIntervalSince(date))
-                    }) {
-                      selectedReading = reading
-                    }
-                  }
-                }
-                .onEnded { _ in
-                  selectedDate = nil
-                  selectedReading = nil
-                }
+            .interpolationMethod(.catmullRom)
+            .foregroundStyle(
+              LinearGradient(
+                colors: [DesignSystem.Colors.primary.opacity(0.2), .clear],
+                startPoint: .top,
+                endPoint: .bottom
+              )
             )
+          }
+          .chartXAxis(.hidden)
+          .chartYAxis(.hidden)
+          .frame(height: 150)
+          .padding(20)
         }
       }
+      .neoBentoCard()
     }
   }
+
+  // MARK: - Previews
 
   #Preview {
-    DashboardView(viewModel: .preview)
+    let mockVM = DashboardViewModel(manager: MockSupabaseManager())
+    mockVM.currentReading = Reading(
+      id: 1, createdAt: Date(), deviceId: "ESP-01", temperature: 24.5, humidity: 60)
+    mockVM.devices = [
+      DashboardViewModel.DeviceInfo(
+        id: "ESP-01", location: "Warehouse A", status: .online, battery: 80)
+    ]
+    mockVM.history = [
+      Reading(id: 1, createdAt: Date(), deviceId: "ESP-01", temperature: 24.5, humidity: 60),
+      Reading(
+        id: 2, createdAt: Date().addingTimeInterval(-3600), deviceId: "ESP-01", temperature: 23.0,
+        humidity: 55),
+      Reading(
+        id: 3, createdAt: Date().addingTimeInterval(-7200), deviceId: "ESP-01", temperature: 22.0,
+        humidity: 50),
+    ]
+    return DashboardView(viewModel: mockVM)
   }
 
-  // MARK: - Preview Helpers
-  extension DashboardViewModel {
-    fileprivate static var preview: DashboardViewModel {
-      let manager = MockSupabaseManager()
-      let viewModel = DashboardViewModel(manager: manager)
-
-      let now = Date()
-      // Generate history with simple time intervals to avoid force-unwrap issues
-      let history = [
-        // Device 1: ESP-01
-        Reading(
-          id: 1, createdAt: now.addingTimeInterval(-6 * 3600), deviceId: "ESP-01",
-          temperature: 22.5, humidity: 60.1),
-        Reading(
-          id: 2, createdAt: now.addingTimeInterval(-4 * 3600), deviceId: "ESP-01",
-          temperature: 24.8, humidity: 65.0),
-        Reading(
-          id: 3, createdAt: now.addingTimeInterval(-2 * 3600), deviceId: "ESP-01",
-          temperature: 25.1, humidity: 68.4),
-        Reading(id: 4, createdAt: now, deviceId: "ESP-01", temperature: 24.2, humidity: 63.3),
-
-        // Device 2: ESP-02
-        Reading(
-          id: 10, createdAt: now.addingTimeInterval(-5 * 3600), deviceId: "ESP-02",
-          temperature: 18.2, humidity: 45.5),
-        Reading(
-          id: 11, createdAt: now.addingTimeInterval(-3 * 3600), deviceId: "ESP-02",
-          temperature: 19.5, humidity: 48.2),
-        Reading(
-          id: 12, createdAt: now.addingTimeInterval(-1 * 3600), deviceId: "ESP-02",
-          temperature: 20.8, humidity: 44.1),
-      ]
-
-      // Inject data
-      viewModel.history = history
-      manager.mockHistory = history
-
-      // Add mock devices for status testing
-      viewModel.devices = [
-        DashboardViewModel.DeviceInfo(
-          id: "ESP-01", location: "倉庫 A", status: .online, battery: 85),
-        DashboardViewModel.DeviceInfo(
-          id: "ESP-02", location: "入口 B", status: .offline, battery: 0),
-      ]
-
-      // Sync currentReading with the latest history item
-      if let latest = history.last {
-        viewModel.currentReading = latest
-        viewModel.checkAlert(for: latest)
-      }
-
-      viewModel.isSubscribed = true
-      return viewModel
-    }
-  }
-
-  /// 假 Supabase 管理器，專供 Preview 或測試用，不實際連線
-  private final class MockSupabaseManager: SupabaseManaging {
-    var sessionToken: String? = nil
+  // Minimal Mock Manager for Preview
+  class MockSupabaseManager: SupabaseManaging {
+    var sessionToken: String? = "mock_token"
     var mockHistory: [Reading] = []
-
     func signIn(email: String, password: String) async throws {}
     func signUp(email: String, password: String) async throws {}
-
-    func fetchHistory(limit: Int) async throws -> [Reading] {
-      // Return local mock history to simulate API response
-      return mockHistory
-    }
-
+    func fetchHistory(limit: Int) async throws -> [Reading] { return mockHistory }
     func signOut() {}
-
     func signIn(
       email: String, password: String, completion: @escaping (Result<Void, Error>) -> Void
     ) {}
     func signUp(
       email: String, password: String, completion: @escaping (Result<Void, Error>) -> Void
     ) {}
-
     func fetchHistory(limit: Int, completion: @escaping (Result<[Reading], Error>) -> Void) {
-      completion(.success(mockHistory))
+      completion(.success([]))
     }
-
     func subscribeToReadings(onInsert: @escaping (Reading) -> Void) {}
     func unsubscribeFromReadings() {}
-  }
-
-  // Expose checkAlert for preview only to force state update
-  extension DashboardViewModel {
-    func forceCheckAlert() {
-      if let reading = currentReading {
-        checkAlert(for: reading)
-      }
-    }
   }
 #endif

@@ -46,6 +46,10 @@ TeaWarehouse-MVP iOS 端已完成 Stage 1 基礎建設，並已進入 **Stage 2*
   - 優化圖標容器與層次感 (`Hierarchical Rendering`)。
   - 調整排版以適應更現代化的視覺風格。
 - **2025-12-23**: **本地化與翻譯**：將 `DashboardView` 與 `DashboardViewModel` (警報文字) 翻譯為台灣中文，保留品牌名稱 "PU'ER SENSE" 為英文，提升在地化使用者體驗。
+- **2025-12-23**: **Design System Upgrade**: 全面導入 **Neo-Bento** 設計系統 (Option 4)。
+  - **Shared Design System**: 建立 `App/Design/DesignSystem.swift` 集中管理 Colors (Indigo/Yellow/Red) 與 Typography (Hero Number, Grid Header)。
+  - **Dashboard Refactor**: 重構為 Hero Card (即時數據) + Status Card (3D Icon) + Context Card (Outline Style) 的模組化多欄網格。
+  - **LoginView Redesign**: 移除茶餅插畫，轉為現代化的高張力排版 (Centered "PU'ER" Hero Text) 與高觸感輸入框 (Neo-Bento Input)。
 
 ## 依據
 
