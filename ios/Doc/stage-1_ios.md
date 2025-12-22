@@ -26,7 +26,7 @@ TeaWarehouse-MVP iOS 端採用 SwiftUI + MVVM，資料源來自 Supabase。
 1. Auth：Email/Password 登入與註冊，保存 Session
 2. Supabase 客戶端單例（供 ViewModel 共用）
 3. Model `Reading` 對應資料表
-4. `SensorViewModel`：訂閱 `readings` `INSERT`、維護 `currentReading`
+4. `DashboardViewModel`：訂閱 `readings` `INSERT`、維護 `currentReading`
 5. 視圖：Dashboard（即時卡片 + 超標震動/通知）
 
 ---
@@ -60,7 +60,7 @@ TeaWarehouse-MVP iOS 端採用 SwiftUI + MVVM，資料源來自 Supabase。
 
 - App 入口：`../App/TeaWarehouseApp.swift`
 - 模型與管理：`../App/Models/Reading.swift`、`../App/Managers/SupabaseManager.swift`
-- ViewModels：`../App/ViewModels/AuthViewModel.swift`、`../App/ViewModels/SensorViewModel.swift`
+- ViewModels：`../App/ViewModels/AuthViewModel.swift`、`../App/ViewModels/DashboardViewModel.swift`
 - 視圖：`../App/Views/LoginView.swift`、`../App/Views/DashboardView.swift`
 
 ---
@@ -72,7 +72,7 @@ TeaWarehouse-MVP iOS 端採用 SwiftUI + MVVM，資料源來自 Supabase。
 3. **設定 Supabase**：建立 `SupabaseManager` 單例，提供 auth、realtime、查詢入口。
 4. **定義模型**：建立 `Reading`（對應 `readings` 欄位）。
 5. **實作 Auth**：`AuthViewModel` 負責登入/註冊與 session 維護。
-6. **即時資料**：`SensorViewModel` 訂閱 Realtime `INSERT`。
+6. **即時資料**：`DashboardViewModel` 訂閱 Realtime `INSERT`。
 7. **介面**：實作 `LoginView` 與 `DashboardView`（含震動/通知控）。
 8. **驗證**：觀察 Realtime 更新與超標行為。
 
@@ -87,7 +87,7 @@ TeaWarehouse-MVP iOS 端採用 SwiftUI + MVVM，資料源來自 Supabase。
 
 ### 測試類型
 
-1. **單元測試**：`SupabaseManager`, `AuthViewModel`, `SensorViewModel`。
+1. **單元測試**：`SupabaseManager`, `AuthViewModel`, `DashboardViewModel`。
 2. **整合測試**：以 mock 驗證 Realtime 更新 UI 狀態。
 3. **UI/手動測試**：登入流程、Dashboard 即時跳動、超標提醒。
 
