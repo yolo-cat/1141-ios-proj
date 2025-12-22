@@ -46,6 +46,7 @@ TeaWarehouse-MVP iOS 端已完成 Stage 1 基礎建設，並已進入 **Stage 2*
   - 優化圖標容器與層次感 (`Hierarchical Rendering`)。
   - 調整排版以適應更現代化的視覺風格。
 - **2025-12-23**: **本地化與翻譯**：將 `DashboardView` 與 `DashboardViewModel` (警報文字) 翻譯為台灣中文，保留品牌名稱 "PU'ER SENSE" 為英文，提升在地化使用者體驗。
+- **2025-12-23**: **修復日期格式不匹配**：Supabase 返回的 `created_at` 包含微秒 (如 `2024-01-01T12:00:00.123456+00:00`)，但 Swift 的 `.iso8601` 預設策略不支援小數秒。重構 `SupabaseManager.supabaseDecoder` 改用自訂 `.custom` 策略，依序嘗試 `withFractionalSeconds` 與標準 ISO8601 格式，確保日期正確解碼。
 
 ## 依據
 

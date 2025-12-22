@@ -56,9 +56,38 @@
       }
     }
 
+    /// Custom ISO8601 formatters to handle Supabase timestamps with/without fractional seconds
+    private static let iso8601WithFractional: ISO8601DateFormatter = {
+      let formatter = ISO8601DateFormatter()
+      formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+      return formatter
+    }()
+
+    private static let iso8601Standard: ISO8601DateFormatter = {
+      let formatter = ISO8601DateFormatter()
+      formatter.formatOptions = [.withInternetDateTime]
+      return formatter
+    }()
+
     private static var supabaseDecoder: JSONDecoder {
       let decoder = JSONDecoder()
-      decoder.dateDecodingStrategy = .iso8601
+      decoder.dateDecodingStrategy = .custom { decoder in
+        let container = try decoder.singleValueContainer()
+        let dateString = try container.decode(String.self)
+
+        // Try fractional seconds first (Supabase default: 2024-01-01T12:00:00.123456+00:00)
+        if let date = iso8601WithFractional.date(from: dateString) {
+          return date
+        }
+        // Fallback to standard ISO8601 without fractional seconds
+        if let date = iso8601Standard.date(from: dateString) {
+          return date
+        }
+        throw DecodingError.dataCorruptedError(
+          in: container,
+          debugDescription: "Invalid date format: \(dateString)"
+        )
+      }
       return decoder
     }
 
