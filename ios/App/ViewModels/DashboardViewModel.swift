@@ -44,6 +44,7 @@
     var isSubscribed: Bool = false
     var lastAlertAt: Date?
     var alertType: AlertType = .normal
+    var devices: [DeviceInfo] = []
 
     var temperatureThreshold: Float
     var humidityThreshold: Float
@@ -62,6 +63,23 @@
       self.manager = manager
       self.temperatureThreshold = temperatureThreshold
       self.humidityThreshold = humidityThreshold
+    }
+
+    /// 感測裝置資訊結構
+    struct DeviceInfo: Identifiable, Equatable {
+      /// 裝置唯一 ID
+      let id: String
+      /// 安裝位置
+      let location: String
+      /// 狀態（上線/離線）
+      let status: Status
+      /// 電池電量百分比
+      let battery: Int
+
+      /// 裝置狀態列舉
+      enum Status {
+        case online, offline
+      }
     }
 
     static func makeDefault() -> DashboardViewModel {

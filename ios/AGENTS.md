@@ -31,6 +31,8 @@ TeaWarehouse-MVP iOS 端已完成 Stage 1 基礎建設，並已進入 **Stage 2*
 - **2025-12-23**: 優化 `DashboardView` Swipe Cards (滑動分頁)：移除歷史列表中的 "Reading + 數字" 標籤，僅保留時間與數據，以提升視覺清爽度。
 - **2025-12-23**: 規劃並批准 **Unified Climate Card** 重構方案：將溫度與濕度整合為單一卡片，支援雙線圖表與整合歷史列表，並保留切換按鈕。
 - **2025-12-23**: 實作**多裝置滑動瀏覽**：按 `device_id` 分組數據，支援巢狀 TabView 切換各裝置環境數據，頂部 Device Indicator 顯示當前裝置。
+- **2025-12-23**: 整合**裝置狀態顯示**：將 `DeviceListCard` 的連線狀態與電量指示燈移植至 `UnifiedClimateCard` 標題，優化數據監控透明度。
+- **2025-12-23**: **簡化導覽架構**：完成狀態功能整合後，正式移除 `DeviceListCard`，並將裝置位置 (Location) 整合至各氣候卡片標題，實現更直覺的單層滑動監控。
 
 ## 依據
 

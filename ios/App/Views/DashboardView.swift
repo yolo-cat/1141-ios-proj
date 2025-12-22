@@ -31,13 +31,10 @@
     /// 當前選取的分頁索引（圖表/設備卡片切換用）
     @State private var activeTab = 0
 
-    /// 假資料：設備清單（尚未串接 VM 時使用）
-    let devices = [
-      DeviceInfo(id: "ESP-01", location: "Section A", status: .online, battery: 85),
-      DeviceInfo(id: "ESP-02", location: "Section B", status: .online, battery: 72),
-      DeviceInfo(id: "ESP-03", location: "Ceiling", status: .offline, battery: 0),
-      DeviceInfo(id: "ESP-04", location: "Floor", status: .online, battery: 45),
-    ]
+    /// 所有感測裝置（由 ViewModel 提供）
+    private var devices: [DashboardViewModel.DeviceInfo] {
+      viewModel.devices
+    }
 
     /// 主畫面內容，包含 Header、Bento Grid、滑動卡片區、Footer
     var body: some View {
@@ -247,9 +244,9 @@
       Array(groupedHistory.keys).sorted()
     }
 
-    /// 總分頁數 (裝置數量 + 設備列表卡片)
+    /// 總分頁數 (僅包含裝置數量)
     private var totalTabs: Int {
-      activeDeviceIds.count + 1
+      activeDeviceIds.count
     }
 
     private var swipeableCardsSection: some View {
@@ -275,19 +272,19 @@
           // 為每個裝置顯示一張整合卡片
           let deviceIds = activeDeviceIds
           ForEach(Array(deviceIds.enumerated()), id: \.offset) { index, deviceId in
+            // 查找該裝置的狀態資訊
+            let deviceInfo = devices.first(where: { $0.id == deviceId })
+
             UnifiedClimateCard(
               deviceId: deviceId,
-              subtitle: "Temperature & Humidity",
+              location: deviceInfo?.location ?? "Unknown Location",
+              status: deviceInfo?.status ?? .offline,
+              battery: deviceInfo?.battery ?? 0,
               readings: groupedHistory[deviceId] ?? []
             )
             .tag(index)
             .padding(.horizontal, 24)
           }
-
-          // 最後一頁：設備清單
-          DeviceListCard(devices: devices)
-            .tag(totalTabs - 1)
-            .padding(.horizontal, 24)
         }
         .tabViewStyle(.page(indexDisplayMode: .never))
         .frame(height: 320)
@@ -317,12 +314,16 @@
 
   // MARK: - Helper Components
 
-  /// 整合環境數據卡片，顯示單一裝置的溫濕度歷史
+  /// 整合環境數據卡片，顯示單一裝置的溫濕度歷史與狀態
   struct UnifiedClimateCard: View {
     /// 裝置 ID (作為標題)
     let deviceId: String
-    /// 副標題
-    let subtitle: String
+    /// 安裝位置 (作為副標題)
+    let location: String
+    /// 該裝置的狀態資訊 (從外部傳入)
+    let status: DashboardViewModel.DeviceInfo.Status
+    /// 該裝置的電量 (從外部傳入)
+    let battery: Int
     /// 該裝置的資料來源
     let readings: [Reading]
 
@@ -347,11 +348,36 @@
             .background(Color.stone100)
             .clipShape(RoundedRectangle(cornerRadius: 12))
 
-            VStack(alignment: .leading) {
-              Text(deviceId)
-                .font(.headline)
-                .foregroundColor(.stone800)
-              Text(subtitle)
+            VStack(alignment: .leading, spacing: 4) {
+              HStack(spacing: 6) {
+                Text(deviceId)
+                  .font(.headline)
+                  .foregroundColor(.stone800)
+
+                // Status Dot
+                Circle()
+                  .fill(status == .online ? Color.green : Color.stone300)
+                  .frame(width: 6, height: 6)
+                  .shadow(color: status == .online ? Color.green.opacity(0.4) : .clear, radius: 2)
+
+                // Battery or WiFi Status
+                if status == .online {
+                  HStack(spacing: 2) {
+                    Text("\(battery)%")
+                      .font(.system(size: 10, design: .monospaced))
+                      .foregroundColor(.stone400)
+                    Image(systemName: "battery.75")
+                      .font(.system(size: 10))
+                      .foregroundColor(battery < 20 ? .red : .stone400)
+                  }
+                } else {
+                  Image(systemName: "wifi.slash")
+                    .font(.system(size: 10))
+                    .foregroundColor(.stone400)
+                }
+              }
+
+              Text(location)
                 .font(.caption)
                 .fontWeight(.medium)
                 .textCase(.uppercase)
@@ -462,106 +488,6 @@
     }
   }
 
-  /// 設備清單卡片，顯示所有感測裝置狀態
-  struct DeviceListCard: View {
-    /// 設備資料陣列
-    let devices: [DeviceInfo]
-
-    var body: some View {
-      VStack(alignment: .leading, spacing: 0) {
-        // Header
-        HStack(spacing: 12) {
-          Image(systemName: "wifi")
-            .padding(10)
-            .background(Color.stone100)
-            .foregroundColor(.stone600)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-
-          VStack(alignment: .leading) {
-            Text("Connected Sensors")
-              .font(.headline)
-              .foregroundColor(.stone800)
-            Text("ESP32 NETWORK")
-              .font(.caption)
-              .fontWeight(.medium)
-              .textCase(.uppercase)
-              .foregroundColor(.stone400)
-          }
-        }
-        .padding(24)
-
-        // List
-        ScrollView {
-          VStack(spacing: 12) {
-            ForEach(devices) { device in
-              HStack {
-                HStack(spacing: 12) {
-                  Circle()
-                    .fill(device.status == .online ? Color.green : Color.stone300)
-                    .frame(width: 8, height: 8)
-                    .shadow(
-                      color: device.status == .online ? Color.green.opacity(0.6) : .clear, radius: 4
-                    )
-
-                  VStack(alignment: .leading) {
-                    Text(device.location)
-                      .font(.subheadline)
-                      .fontWeight(.bold)
-                      .foregroundColor(.stone700)
-                    Text(device.id)
-                      .font(.caption2)
-                      .fontWeight(.medium)
-                      .textCase(.uppercase)
-                      .foregroundColor(.stone400)
-                  }
-                }
-                Spacer()
-                if device.status == .online {
-                  HStack(spacing: 4) {
-                    Text("\(device.battery)%")
-                      .font(.caption)
-                      .fontDesign(.monospaced)
-                    Image(systemName: "battery.75")
-                  }
-                  .foregroundColor(device.battery < 20 ? .red : .stone400)
-                } else {
-                  Image(systemName: "wifi.slash")
-                    .font(.caption)
-                    .foregroundColor(.stone400)
-                }
-              }
-              .padding(12)
-              .background(Color.stone50)
-              .cornerRadius(16)
-            }
-          }
-          .padding(.horizontal, 24)
-          .padding(.bottom, 24)
-        }
-      }
-      .background(Color.white)
-      .cornerRadius(32)
-      .shadow(color: Color.stone100, radius: 1, x: 0, y: 0)
-      .shadow(color: Color.black.opacity(0.02), radius: 10, x: 0, y: 4)
-    }
-  }
-
-  /// 感測裝置資訊結構
-  struct DeviceInfo: Identifiable {
-    /// 裝置唯一 ID
-    let id: String
-    /// 安裝位置
-    let location: String
-    /// 狀態（上線/離線）
-    let status: Status
-    /// 電池電量百分比
-    let battery: Int
-
-    /// 裝置狀態列舉
-    enum Status {
-      case online, offline
-    }
-  }
 
   #Preview {
     DashboardView(viewModel: .preview)
@@ -603,6 +529,14 @@
       // Inject data
       viewModel.history = history
       manager.mockHistory = history
+
+      // Add mock devices for status testing
+      viewModel.devices = [
+        DashboardViewModel.DeviceInfo(
+          id: "ESP-01", location: "Warehouse A", status: .online, battery: 85),
+        DashboardViewModel.DeviceInfo(
+          id: "ESP-02", location: "Entrance B", status: .offline, battery: 0),
+      ]
 
       // Sync currentReading with the latest history item
       if let latest = history.last {
