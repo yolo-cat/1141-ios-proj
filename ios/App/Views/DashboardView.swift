@@ -138,9 +138,17 @@
         VStack(alignment: .leading) {
           HStack(alignment: .top) {
             VStack(alignment: .leading) {
-              Text("\(Int(viewModel.currentReading?.temperature ?? 0))°")
-                .font(.system(size: 32, weight: .bold, design: .rounded))
-                .foregroundColor(.stone800)
+              HStack(alignment: .lastTextBaseline, spacing: 8) {
+                Text("\(Int(viewModel.currentReading?.temperature ?? 0))°")
+                  .font(.system(size: 32, weight: .bold, design: .rounded))
+                  .foregroundColor(.stone800)
+
+                if let date = viewModel.currentReading?.createdAt {
+                  Text(date.formatted(date: .omitted, time: .shortened))
+                    .font(.system(size: 10, weight: .medium, design: .monospaced))
+                    .foregroundColor(.stone400)
+                }
+              }
               Text("AVG TEMP")
                 .font(.system(size: 10, weight: .medium))
                 .foregroundColor(.stone400)

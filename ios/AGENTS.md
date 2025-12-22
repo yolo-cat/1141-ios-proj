@@ -5,11 +5,12 @@ TeaWarehouse-MVP iOS 端已完成 Stage 1 基礎建設，並已進入 **Stage 2*
 ## 歷史記錄
 
 - Stage 1 完整內容已整合至：[`Doc/stage-1_ios.md`](stage-1_ios.md)
+- **2025-12-23**: 審核 `DashboardView` 即時數據卡片，已補齊 `createdAt` 更新時間顯示。
 
 ## 依據
 
 - PRD：[`../PRD_STAGE2.md`](../PRD_STAGE2.md) (若有)
-- 設計規格：[`Doc/stage-2-view/STAGE_2_IOS_DashboardView.md`](Doc/stage-2-view/STAGE_2_IOS_DashboardView.md) (Bento Grid, Swipe Cards)
+- 設計規格：[`Doc/stage-2-view/STAGE_2_IOS_DashboardView.md`](Doc/stage-2-view/STAGE_2_IOS_DashboardView.md) (已更新：即時數據卡片新增更新時間顯示)
 - 基礎：`Doc/stage-1_ios.md` 所列之架構與實作
 
 ## Stage 2 目標

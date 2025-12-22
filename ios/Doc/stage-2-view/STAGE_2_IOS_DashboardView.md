@@ -11,8 +11,9 @@
 ### Main Area (主要內容)
 
 - **Bento Grid (便當佈局)**：
-  - **即時數據卡片**：顯示當前溫度與濕度。數據來源為 `SensorViewModel.currentReading`。
-  - **異常警報卡片**：顯示當前警報狀態。若 `lastAlertAt` 在近期且警報活躍，顯示紅色高亮；否則顯示「系統正常」。數據來源為 `SensorViewModel.isSubscribed` 與警報邏輯。
+  - **即時數據卡片**：顯示當前溫度與濕度。數據來源為 `DashboardViewModel.currentReading`：
+    - 採用最近一筆數據，並顯示其更新時間 (`createdAt`)。
+  - **異常警報卡片**：顯示當前警報狀態。若 `lastAlertAt` 在近期且警報活躍，顯示紅色高亮；否則顯示「系統正常」。數據來源為 `DashboardViewModel.isSubscribed` 與警報邏輯。
 - **Swipe Cards (滑動分頁)**：
   - 使用 SwiftUI `TabView` 配合 `.tabViewStyle(.page(indexDisplayMode: .always))` 實現。
   - **卡片 1 (溫度)**：顯示溫度趨勢圖 (Swift Charts) 與歷史列表。
@@ -31,7 +32,7 @@
 
 ## SwiftUI 實作範例
 
-本範例展示如何與 `SensorViewModel` 互動，並實作上述 UI 組件。
+本範例展示如何與 `DashboardViewModel` 互動，並實作上述 UI 組件。
 
 ### DashboardView.swift
 
@@ -40,7 +41,7 @@ import SwiftUI
 import Charts
 
 struct DashboardView: View {
-    @State private var viewModel = SensorViewModel.makeDefault()
+    @State private var viewModel = DashboardViewModel.makeDefault()
     @State private var selectedTab = 0
 
     var body: some View {
@@ -118,11 +119,18 @@ struct DashboardView: View {
         HStack(spacing: 16) {
             // Live Metrics
             VStack(alignment: .leading, spacing: 12) {
-                VStack(alignment: .leading) {
+                HStack(alignment: .lastTextBaseline) {
                     Text("\(String(format: "%.1f", viewModel.currentReading?.temperature ?? 0))°")
                         .font(.system(size: 32, weight: .bold))
-                    Text("Avg Temp").font(.caption).foregroundColor(.secondary)
+                    Spacer()
+                    if let date = viewModel.currentReading?.createdAt {
+                        Text(date.formatted(date: .omitted, time: .shortened))
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
                 }
+
+                Text("Temp").font(.caption).foregroundColor(.secondary)
 
                 Divider()
 
@@ -264,4 +272,4 @@ struct DeviceStatusCard: View {
 
 1. **ViewModel 生命週期**：請確保在 `onAppear` 呼叫 `startListening()`，並在 `onDisappear` 呼叫 `stopListening()` 以節省資源。
 2. **數據流**：所有即時更新均應透過 `@Observable` 的 `history` 與 `currentReading` 自動驅動視圖更新。
-3. **門檻值**：警報邏輯已封裝於 `SensorViewModel` 內，UI 僅需根據 `lastAlertAt` 顯示對應狀態。
+3. **門檻值**：警報邏輯已封裝於 `DashboardViewModel` 內，UI 僅需根據 `lastAlertAt` 顯示對應狀態。

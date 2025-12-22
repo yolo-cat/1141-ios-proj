@@ -10,10 +10,6 @@
 		C78F176A2EEF2EDB00ED9CA1 /* Supabase.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = C78F17692EEF2EDB00ED9CA1 /* Supabase.xcconfig */; };
 		C79AF7962EEDD995008088F6 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = C79AF7932EEDD995008088F6 /* README.md */; };
 		C79AF7972EEDD995008088F6 /* AGENTS.md in Resources */ = {isa = PBXBuildFile; fileRef = C79AF7902EEDD995008088F6 /* AGENTS.md */; };
-		C79AF7982EEDD995008088F6 /* DESIGN_IOS_STAGE_1.md in Resources */ = {isa = PBXBuildFile; fileRef = C79AF7912EEDD995008088F6 /* DESIGN_IOS_STAGE_1.md */; };
-		C79AF7992EEDD995008088F6 /* TEST_IOS_STAGE1.md in Resources */ = {isa = PBXBuildFile; fileRef = C79AF7952EEDD995008088F6 /* TEST_IOS_STAGE1.md */; };
-		C79AF79A2EEDD995008088F6 /* TASKS_IOS_STAGE_1.md in Resources */ = {isa = PBXBuildFile; fileRef = C79AF7942EEDD995008088F6 /* TASKS_IOS_STAGE_1.md */; };
-		C79AF79B2EEDD995008088F6 /* PRD_IOS_STAGE_1.md in Resources */ = {isa = PBXBuildFile; fileRef = C79AF7922EEDD995008088F6 /* PRD_IOS_STAGE_1.md */; };
 		C79AF79E2EEEC9D1008088F6 /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = C79AF79D2EEEC9D1008088F6 /* Auth */; };
 		C79AF7A02EEEC9D1008088F6 /* Functions in Frameworks */ = {isa = PBXBuildFile; productRef = C79AF79F2EEEC9D1008088F6 /* Functions */; };
 		C79AF7A22EEEC9D1008088F6 /* PostgREST in Frameworks */ = {isa = PBXBuildFile; productRef = C79AF7A12EEEC9D1008088F6 /* PostgREST */; };
@@ -33,11 +29,7 @@
 		C78F17692EEF2EDB00ED9CA1 /* Supabase.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Supabase.xcconfig; sourceTree = "<group>"; };
 		C78F17BC2EF0517200ED9CA1 /* ios.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ios.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C79AF7902EEDD995008088F6 /* AGENTS.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = AGENTS.md; sourceTree = "<group>"; };
-		C79AF7912EEDD995008088F6 /* DESIGN_IOS_STAGE_1.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = DESIGN_IOS_STAGE_1.md; sourceTree = "<group>"; };
-		C79AF7922EEDD995008088F6 /* PRD_IOS_STAGE_1.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = PRD_IOS_STAGE_1.md; sourceTree = "<group>"; };
 		C79AF7932EEDD995008088F6 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
-		C79AF7942EEDD995008088F6 /* TASKS_IOS_STAGE_1.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = TASKS_IOS_STAGE_1.md; sourceTree = "<group>"; };
-		C79AF7952EEDD995008088F6 /* TEST_IOS_STAGE1.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = TEST_IOS_STAGE1.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -77,11 +69,7 @@
 				C78F17432EEF23BC00ED9CA1 /* ios-Info.plist */,
 				C79AF7302EEDD802008088F6 /* app */,
 				C79AF7902EEDD995008088F6 /* AGENTS.md */,
-				C79AF7912EEDD995008088F6 /* DESIGN_IOS_STAGE_1.md */,
-				C79AF7922EEDD995008088F6 /* PRD_IOS_STAGE_1.md */,
 				C79AF7932EEDD995008088F6 /* README.md */,
-				C79AF7942EEDD995008088F6 /* TASKS_IOS_STAGE_1.md */,
-				C79AF7952EEDD995008088F6 /* TEST_IOS_STAGE1.md */,
 				C78F17692EEF2EDB00ED9CA1 /* Supabase.xcconfig */,
 				C78F17BC2EF0517200ED9CA1 /* ios.app */,
 			);
@@ -171,11 +159,7 @@
 			files = (
 				C79AF7962EEDD995008088F6 /* README.md in Resources */,
 				C79AF7972EEDD995008088F6 /* AGENTS.md in Resources */,
-				C79AF7982EEDD995008088F6 /* DESIGN_IOS_STAGE_1.md in Resources */,
 				C78F176A2EEF2EDB00ED9CA1 /* Supabase.xcconfig in Resources */,
-				C79AF7992EEDD995008088F6 /* TEST_IOS_STAGE1.md in Resources */,
-				C79AF79A2EEDD995008088F6 /* TASKS_IOS_STAGE_1.md in Resources */,
-				C79AF79B2EEDD995008088F6 /* PRD_IOS_STAGE_1.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
