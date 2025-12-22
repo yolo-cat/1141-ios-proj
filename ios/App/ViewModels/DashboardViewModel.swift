@@ -20,17 +20,17 @@
 
       var title: String {
         switch self {
-        case .normal: return "Normal"
-        case .temperature, .humidity, .both: return "Alert"
+        case .normal: return "正常"
+        case .temperature, .humidity, .both: return "警報"
         }
       }
 
       var description: String {
         switch self {
-        case .normal: return "All systems operational."
-        case .temperature: return "Temperature exceeded threshold."
-        case .humidity: return "Humidity exceeded threshold."
-        case .both: return "Temperature & Humidity critical."
+        case .normal: return "所有系統運作正常。"
+        case .temperature: return "溫度超過閾值。"
+        case .humidity: return "濕度超過閾值。"
+        case .both: return "溫濕度警報。"
         }
       }
 

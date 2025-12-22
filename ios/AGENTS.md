@@ -36,6 +36,7 @@ TeaWarehouse-MVP iOS 端已完成 Stage 1 基礎建設，並已進入 **Stage 2*
 - **2025-12-23**: **簡化導覽架構**：完成狀態功能整合後，正式移除 `DeviceListCard`，並將裝置位置 (Location) 整合至各氣候卡片標題，實現更直覺的單層滑動監控。
 - **2025-12-23**: **同步設計文檔**：更新 `Doc/stage-2-view/STAGE_2_IOS_DashboardView.md` 以反映 `UnifiedClimateCard` 與「方案 B」警報卡片的最終實作，並補齊代碼函數映射。
 - **2025-12-23**: **即時數據卡片優化**：調整 `DashboardView` 即時數據卡片的佈局，將溫濕度圖標移至數據左側並與時間圖標對齊，提升視覺層次的一致性。
+  40: - **2025-12-23**: **本地化與翻譯**：將 `DashboardView` 與 `DashboardViewModel` (警報文字) 翻譯為台灣中文，保留品牌名稱 "PU'ER SENSE" 為英文，提升在地化使用者體驗。
 
 ## 依據
 

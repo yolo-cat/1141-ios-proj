@@ -93,7 +93,7 @@
         // 中：地點切換按鈕
         Button(action: {}) {
           HStack(spacing: 4) {
-            Text("Menghai Depot")
+            Text("勐海倉庫")
               .font(.subheadline)
               .fontWeight(.bold)
               .foregroundColor(.stone700)
@@ -156,7 +156,7 @@
               Text("\(Int(viewModel.currentReading?.temperature ?? 0))°")
                 .font(.system(size: 32, weight: .bold, design: .rounded))
                 .foregroundColor(.stone800)
-              Text("TEMP")
+              Text("溫度")
                 .font(.system(size: 10, weight: .medium))
                 .foregroundColor(.stone400)
             }
@@ -175,7 +175,7 @@
               Text("\(Int(viewModel.currentReading?.humidity ?? 0))%")
                 .font(.system(size: 32, weight: .bold, design: .rounded))
                 .foregroundColor(.stone800)
-              Text("HUMIDITY")
+              Text("濕度")
                 .font(.system(size: 10, weight: .medium))
                 .foregroundColor(.stone400)
             }
@@ -190,7 +190,7 @@
         // 警示卡片 (Dynamic Alert Card - Option B: Dynamic Surface)
         VStack(alignment: .leading) {
           HStack {
-            Text("STATUS")
+            Text("狀態")
               .font(.system(size: 11, weight: .bold))  // Slightly larger label
               .opacity(0.6)
             Spacer()
@@ -263,7 +263,7 @@
       VStack(spacing: 0) {
         // 區塊標題與分頁指示點
         HStack {
-          Text("Analytics")
+          Text("歷史紀錄")
             .font(.headline)
             .foregroundColor(.stone700)
           Spacer()
@@ -287,7 +287,7 @@
 
             UnifiedClimateCard(
               deviceId: deviceId,
-              location: deviceInfo?.location ?? "Unknown Location",
+              location: deviceInfo?.location ?? "未知地點",
               status: deviceInfo?.status ?? .offline,
               battery: deviceInfo?.battery ?? 0,
               readings: groupedHistory[deviceId] ?? []
@@ -308,7 +308,7 @@
         HStack(spacing: 12) {
           Image(systemName: "building.2.fill")
             .foregroundColor(.stone300)
-          Text("Manage Warehouse")
+          Text("管理倉庫")
             .fontWeight(.semibold)
         }
         .foregroundColor(.stone50)
@@ -470,7 +470,7 @@
 
               // Temperature
               VStack(alignment: .leading, spacing: 2) {
-                Text("Temperature")
+                Text("溫度")
                   .font(.caption)
                   .fontWeight(.medium)
                   .foregroundColor(.stone400)
@@ -491,7 +491,7 @@
 
               // Humidity
               VStack(alignment: .leading, spacing: 2) {
-                Text("Humidity")
+                Text("濕度")
                   .font(.caption)
                   .fontWeight(.medium)
                   .foregroundColor(.stone400)
@@ -724,9 +724,9 @@
       // Add mock devices for status testing
       viewModel.devices = [
         DashboardViewModel.DeviceInfo(
-          id: "ESP-01", location: "Warehouse A", status: .online, battery: 85),
+          id: "ESP-01", location: "倉庫 A", status: .online, battery: 85),
         DashboardViewModel.DeviceInfo(
-          id: "ESP-02", location: "Entrance B", status: .offline, battery: 0),
+          id: "ESP-02", location: "入口 B", status: .offline, battery: 0),
       ]
 
       // Sync currentReading with the latest history item
