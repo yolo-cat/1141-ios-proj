@@ -133,18 +133,26 @@
       HStack(spacing: 16) {
         // 溫度/濕度數據卡
         VStack(alignment: .leading) {
-          HStack(alignment: .top) {
-            VStack(alignment: .leading) {
-              if let date = viewModel.currentReading?.createdAt {
-                HStack(spacing: 4) {
-                  Image(systemName: "clock")
-                  Text(date, format: .dateTime.hour(.twoDigits(amPM: .omitted)).minute())
-                }
-                .font(.system(size: 10, weight: .bold, design: .monospaced))
-                .foregroundColor(.stone400)
-                .padding(.bottom, 2)
-              }
+          // Time Row
+          if let date = viewModel.currentReading?.createdAt {
+            HStack(spacing: 4) {
+              Image(systemName: "clock")
+              Text(date, format: .dateTime.hour(.twoDigits(amPM: .omitted)).minute())
+            }
+            .font(.system(size: 10, weight: .bold, design: .monospaced))
+            .foregroundColor(.stone400)
+          }
 
+          Spacer()
+
+          // Temp Row
+          HStack(spacing: 12) {
+            Image(systemName: "thermometer.medium")
+              .font(.title2)
+              .foregroundColor(.orange.opacity(0.8))
+              .frame(width: 24)
+
+            VStack(alignment: .leading, spacing: 0) {
               Text("\(Int(viewModel.currentReading?.temperature ?? 0))°")
                 .font(.system(size: 32, weight: .bold, design: .rounded))
                 .foregroundColor(.stone800)
@@ -152,13 +160,18 @@
                 .font(.system(size: 10, weight: .medium))
                 .foregroundColor(.stone400)
             }
-            Spacer()
-            Image(systemName: "thermometer.medium")
-              .foregroundColor(.orange.opacity(0.8))
           }
+
           Spacer()
-          HStack(alignment: .bottom) {
-            VStack(alignment: .leading) {
+
+          // Humidity Row
+          HStack(spacing: 12) {
+            Image(systemName: "drop.fill")
+              .font(.title2)
+              .foregroundColor(.blue.opacity(0.8))
+              .frame(width: 24)
+
+            VStack(alignment: .leading, spacing: 0) {
               Text("\(Int(viewModel.currentReading?.humidity ?? 0))%")
                 .font(.system(size: 32, weight: .bold, design: .rounded))
                 .foregroundColor(.stone800)
@@ -166,9 +179,6 @@
                 .font(.system(size: 10, weight: .medium))
                 .foregroundColor(.stone400)
             }
-            Spacer()
-            Image(systemName: "drop.fill")
-              .foregroundColor(.blue.opacity(0.8))
           }
         }
         .padding(20)
@@ -487,7 +497,6 @@
       }
     }
   }
-
 
   #Preview {
     DashboardView(viewModel: .preview)

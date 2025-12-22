@@ -11,10 +11,13 @@
 ### Main Area (主要內容)
 
 - **Bento Grid (便當佈局)**：
-  - **即時數據卡片**：顯示當前溫度與濕度。數據來源為 `DashboardViewModel.currentReading`：
-    - 採用最近一筆數據，並顯示其更新時間 (`createdAt`)。
-  - **異常警報卡片**：顯示當前警報狀態。(詳見下文 [異常警報卡片設計方案](#異常警報卡片設計方案-design-proposals))
-    - 預設採用 **方案 B (Dynamic Surface)** 進行實作。
+  - **即時數據卡片**：顯示當前最新的一筆環境數據。
+    - **內容**：包含更新時間 (`HH:mm`)、溫度 (`temperature`)、濕度 (`humidity`)。
+    - **佈局**：垂直排列，圖標 (`thermometer`, `drop`) 置於數據左側，與時間圖標 (`clock`) 靠左對齊。
+    - **來源**：`DashboardViewModel.currentReading` (@[App/ViewModels/DashboardViewModel.swift])。
+  - **異常警報卡片**：顯示當前系統警報狀態。
+    - **實作樣式**：採用 **方案 B (Dynamic Surface)**，背景色與邊框隨狀態變更。
+    - **來源**：`DashboardViewModel.alertType` (@[App/ViewModels/DashboardViewModel.swift]: `checkAlert(for:)`)。
 
 ### 異常警報卡片設計方案 (Design Proposals)
 
@@ -31,38 +34,31 @@
   - **Alert**：紅色背景膠囊 + 白色文字 + 警示圖標。
 - **適用場景**：當儀表板資訊密度極高，需要降低視覺噪音時。
 
-#### 方案 B：Dynamic Surface (Contextual 通知風格) **[推薦]**
+#### 實作細節：方案 B (Dynamic Surface)
 
-> **設計關鍵詞**：Immersive, Color Semantics, Glanceability
-
-- **視覺特徵**：
-  - **容器染色**：背景色隨狀態改變，提供最強烈的視覺回饋。
-  - **Normal**：`Color.white` (或極淡灰)，搭配標準綠色圖標。
-  - **Alert**：`Color.red.opacity(0.1)` (淡紅背景)，文字轉為 `.red`，並疊加紅色邊框 (`.stroke`)。
-  - **動畫**：狀態切換時使用 `.animation(.spring)` 進行背景色過渡。
-- **優勢**：在「掃視」(Glance) 情境下能最快傳達異常，符合 Dashboard 核心目的。
-
-#### 方案 C：Glassmorphism HUD (高科技風格)
-
-> **設計關鍵詞**：Translucency, Mesh Gradient, Neumorphism
-
-- **視覺特徵**：
-  - **背景**：使用 `UltraThinMaterial` (磨砂玻璃)。
-  - **光暈**：底部圖層放置 `AngularGradient` 或 Mesh Gradient，隨狀態旋轉或呼吸。
-  - **Normal**：青色/藍色冷光呼吸。
-  - **Alert**：橙紅色/紅色警示光脈衝 (Pulse)。
-- **適用場景**：若 App 整體走向 Cyberpunk 或高科技工業風。
+- **容器染色**：背景色隨狀態改變。
+  - **Normal**：`Color.white` 背景，搭配標準綠色圖標與「Normal」標題。
+  - **Alert**：`Color.red.opacity(0.08)` 背景，紅色的 `.stroke` 邊框，強化視覺顯著性。
+- **排版優化**：
+  - **Main Title**：放大至 `.title2` (Bold Rounded)。
+  - **Icon**：使用 `.title2` 尺寸的 `exclamationmark.triangle.fill`。
+  - **Description**：放大至 `.subheadline` 並設為 `.fontWeight(.medium)`，確保易讀性。
+- **動畫**：狀態切換時使用 `.animation(.spring)`。
 
 ---
 
-- **Swipe Cards (滑動分頁)**：
-  - 使用 SwiftUI `TabView` 配合 `.tabViewStyle(.page(indexDisplayMode: .always))` 實現。
-  - **卡片 1 (環境數據)**：整合顯示溫度與濕度。
-    - **圖表模式 (預設)**：Swift Charts 雙線疊加圖表。溫度為橘色實線，濕度為藍色虛線。
-    - **列表模式**：整合歷史列表。每行同時顯示 `時間 | 溫度 | 濕度`。
-    - **切換機制**：右上角設有切換按鈕，點擊可於圖表與列表間切換。
-    - **多裝置支援**：當數據來自多個 `device_id` 時，使用巢狀 TabView 滑動瀏覽各裝置數據。頂部顯示 Device Indicator 標示當前裝置。
-  - **卡片 2 (裝置)**：顯示裝置狀態列表 (Online/Offline)。
+- **Unified Monitoring (整合監控區)**：
+  - 使用 `TabView` 進行多裝置分頁，正式取代原本的獨立裝置卡片。
+  - **整合卡片 (UnifiedClimateCard)**：
+    - **Header**：裝置名稱 (`deviceId`)、狀態指示燈 (Online/Offline)、電量/連線狀態。
+    - **圖表模式**：雙線疊置圖表 (Swift Charts)。
+      - 溫度：橙色 (`.orange`) 實線，搭配漸層充填區域。
+      - 濕度：藍色 (`.blue`) 虛線。
+      - 排序：**時間正序 (Oldest First)**。
+    - **列表模式**：
+      - 每行格式：`時間 | 溫度 | 濕度`。
+      - 排序：**時間倒序 (Newest First/Latest On Top)**。
+    - **切換機制**：右上方圖示切換 `showList` 狀態。
 
 ### Footer (底部功能)
 
@@ -81,27 +77,30 @@
 ### 1. 視圖實作 (DashboardView.swift)
 
 ```swift
-// 即時數據卡片實作片段
-private var bentoGrid: some View {
-    HStack(spacing: 16) {
-        VStack(alignment: .leading) {
-            HStack(alignment: .lastTextBaseline, spacing: 8) {
-                Text("\(Int(viewModel.currentReading?.temperature ?? 0))°")
-                    .font(.system(size: 32, weight: .bold, design: .rounded))
-                    .foregroundColor(.stone800)
-
-                // 更新時間顯示 (Stage 2 規格: 24H)
-                if let date = viewModel.currentReading?.createdAt {
-                    Text(date, format: .dateTime.hour(.twoDigits(amPM: .omitted)).minute())
-                        .font(.system(size: 10, weight: .medium, design: .monospaced))
-                        .foregroundColor(.stone400)
-                }
-            }
-            Text("AVG TEMP").font(.system(size: 10, weight: .medium)).foregroundColor(.stone400)
-            Spacer()
-            // ... 濕度顯示邏輯 ...
+// DashboardView.swift 中的 Bento Grid 與卡片調用
+private var swipeableCardsSection: some View {
+    TabView(selection: $activeTab) {
+        ForEach(Array(activeDeviceIds.enumerated()), id: \.offset) { index, deviceId in
+            UnifiedClimateCard(
+                deviceId: deviceId,
+                location: deviceInfo?.location ?? "Unknown",
+                status: deviceInfo?.status ?? .offline,
+                battery: deviceInfo?.battery ?? 0,
+                readings: groupedHistory[deviceId] ?? []
+            )
+            .tag(index)
         }
-        .padding(20).frame(height: 160).background(Color.white).cornerRadius(32)
+    }
+}
+
+// UnifiedClimateCard 歷史列表排序邏輯
+private func deviceContentView(readings: [Reading]) -> some View {
+    if showList {
+        let sortedData = readings.sorted { $0.createdAt > $1.createdAt } // Newest First
+        // ...渲染內容...
+    } else {
+        let chartData = readings.sorted { $0.createdAt < $1.createdAt } // Oldest First (Timeline)
+        // ...渲染圖表...
     }
 }
 ```
@@ -153,21 +152,20 @@ AI AGENTS 可使用 `supabase-mcp-server` 進行即時驗證：
 
 ---
 
-## 架構與依賴 (Architecture & Dependencies)
-
 - **Design Pattern**: MVVM + Observation (SwiftUI 17+)
 - **View**: `DashboardView` (@[App/Views/DashboardView.swift])
+  - `headerView`: 頂部導航
+  - `bentoGrid`: 即時數據與警報
+  - `swipeableCardsSection`: 多裝置整合監控分頁
 - **ViewModel**: `DashboardViewModel` (@[App/ViewModels/DashboardViewModel.swift])
-  - **Dependency**: `SupabaseManager` (Singleton) for Realtime Data.
-- **Data Flow (Call Stack)**:
-  1. `DashboardView` calls `viewModel.startListening()` on appear.
-  2. `SupabaseManager` receives realtime payload.
-  3. Payload decoded via `ReadingRow` internal struct.
-  4. `DashboardViewModel` updates `@Observable var currentReading`.
-  5. View reacts instantly.
+  - `startListening()`: 啟動 Realtime 監聽
+  - `checkAlert(for:)`: 警報判斷邏輯
+  - `fetchHistory(limit:)`: 獲取歷史紀錄
+- **Dependency**: `SupabaseManager` (@[App/Managers/SupabaseManager.swift]) 為資料流核心。
 
 ## 注意事項
 
-1. **ViewModel 生命週期**：請確保在 `onAppear` 呼叫 `startListening()`。
-2. **數據流**：所有即時更新均由 `DashboardViewModel.currentReading` 驅動，UI 切勿持有重複狀態。
-3. **解碼健壯性**：若 Realtime 斷開或解碼失敗，應在 `SupabaseManager` 捕獲 error 並嘗試重連。
+1. **ViewModel 生命週期**：請確保在 `onAppear` 呼叫 `startListening()` 與 `fetchDefaultHistory()`。
+2. **數據流**：所有 UI 狀態均由 `DashboardViewModel` 的屬性驅動，遵循 **Single Source of Truth**。
+3. **列表效能**：`UnifiedClimateCard` 在渲染大數據量歷史列表時，應監控內存，必要時使用 `LazyVStack` 或分頁加載。
+4. **離線處理**：若 `SupabaseManager` 連線中斷，View 應顯示適當的離線佔位符 (已整合至 `UnifiedClimateCard` 標題)。
