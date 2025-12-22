@@ -1,9 +1,9 @@
 /*
- 檔案說明：
- DashboardView.swift
- 普洱茶倉環境監控系統主儀表板畫面，負責顯示即時感測數據、歷史圖表、設備狀態與管理入口。
- 使用 SwiftUI，支援 iOS 17+，結合 MVVM 架構。
-*/
+ * File: DashboardView.swift
+ * Purpose: Main dashboard UI displaying real-time sensor data, charts, and device status.
+ * Architecture: SwiftUI View using @Bindable for DashboardViewModel. Features Bento Grid layout.
+ * AI Context: UI-only. All business/alert logic should stay in DashboardViewModel.
+ */
 
 #if canImport(SwiftUI)
   import SwiftUI

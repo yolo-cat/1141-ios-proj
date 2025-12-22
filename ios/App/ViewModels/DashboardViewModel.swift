@@ -1,4 +1,9 @@
-/// 2025-12-13: 對接 async SupabaseManaging 並保持 @Observable。
+/*
+ * File: DashboardViewModel.swift
+ * Purpose: Provides sensor data aggregation, history fetching, and alert logic for the Dashboard.
+ * Architecture: MVVM (ViewModel) using @Observable. Interacts with SupabaseManager for streaming/history.
+ * AI Context: Logic for temperature/humidity alerts resides here. Check StageConfig for thresholds.
+ */
 #if canImport(Foundation)
   import Foundation
   import Observation

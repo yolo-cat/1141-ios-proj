@@ -1,19 +1,22 @@
-/// 2025-12-13: 修正 supabase-swift API 呼叫錯誤（session、order、execute、decode）。
+/*
+ * File: SupabaseManager.swift
+ * Purpose: Handles all backend interactions including Auth, Database, and Realtime syncing.
+ * Architecture: Singleton implementing SupabaseManaging. Uses async/await and RealtimeV2.
+ * AI Context: Central data gateway. Always use async APIs over legacy completion handlers.
+ */
 #if canImport(Foundation)
   import Foundation
   import Supabase
 
-  /// Protocol defining the contract for Supabase authentication and data operations.
   protocol SupabaseManaging {
     var sessionToken: String? { get }
 
-    // Async-first APIs
     func signIn(email: String, password: String) async throws
     func signUp(email: String, password: String) async throws
     func fetchHistory(limit: Int) async throws -> [Reading]
     func signOut()
 
-    // Legacy completion-based adapters
+    // Legacy support
     func signIn(
       email: String, password: String, completion: @escaping (Result<Void, Error>) -> Void)
     func signUp(

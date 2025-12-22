@@ -1,4 +1,9 @@
-/// 2025-12-13: 改用 Observation 注入 AuthViewModel 並新增版本註釋。
+/*
+ * File: TeaWarehouseApp.swift
+ * Purpose: Main application entry point and dependency injection root.
+ * Architecture: SwiftUI App structure using @Observation for state management.
+ * AI Context: Root of the view hierarchy. Injects global view models.
+ */
 #if canImport(SwiftUI)
   import SwiftUI
   import Observation

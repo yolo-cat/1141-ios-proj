@@ -19,12 +19,15 @@ TeaWarehouse-MVP iOS 端已完成 Stage 1 基礎建設，並已進入 **Stage 2*
 3. **UI 細化與互動**：基於已實作的 Bento Grid 與專屬動畫，持續優化視覺回饋。
 4. **進階通知管理**：更靈活的通知設定（閾值自定義）。
 
-## 原則
+## 原則 (Success Model)
 
-- 延續 MVVM 架構。
-- 保持 `SupabaseManager` 的單一職責。
-- **文檔同步**：任何代碼修改後，必須同步更新 `AGENTS.md` 與 `README.md` 的相關描述。
-- 持續編寫與維護測試案例。
+本專案遵循 **High-Probability Success Model (Agentic PDCA)**：
+
+- **Context Integrity**: 文檔是「長期記憶」，必須與代碼嚴格一致。
+- **Token Economy**: 珍惜 Attention Window，代碼註釋專注於 "Why over What"。
+- **Header Standard**: 所有檔案必須具備 `AI-Optimized Header`。
+- **Doc Synchronization**: 任何修改後，必須同步更新 `AGENTS.md` 與 `README.md`。
+- **Testing**: 持續編寫與維護測試案例，確保不回歸。
 
 ## 開發流程
 
