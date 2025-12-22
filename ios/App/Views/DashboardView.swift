@@ -59,15 +59,15 @@
               // 3. 滑動卡片（圖表/設備）
               swipeableCardsSection
 
-              // 浮動 Footer 預留空間
-              Color.clear.frame(height: 100)
+              // 浮動 Footer 預留空間 (防止遮擋)
+              Color.clear.frame(height: 180)
             }
             .padding(.vertical)
           }
         }
 
         // 4. 頁尾：倉庫管理按鈕
-
+        footerView
       }
       .onAppear {
         // 畫面出現時啟動資料監聽與預設歷史查詢
@@ -109,34 +109,20 @@
 
         Spacer()
 
-        // 右：功能與頭像
-        HStack(spacing: 12) {
-          // 管理倉庫按鈕
-          Button(action: {}) {
-            Image(systemName: "building.2.fill")
-              .font(.system(size: 14, weight: .semibold))
-              .foregroundColor(.stone600)
-              .padding(10)
-              .background(Color.white)
-              .clipShape(Circle())
-              .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
-          }
-
-          // 使用者頭像
-          Button(action: {}) {
-            Circle()
-              .fill(Color.stone200)
-              .frame(width: 40, height: 40)
-              .overlay(
-                Image(systemName: "person.fill")
-                  .foregroundColor(.stone400)
-              )
-              .overlay(
-                Circle()
-                  .stroke(Color.white, lineWidth: 2)
-              )
-              .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
-          }
+        // 右：使用者頭像
+        Button(action: {}) {
+          Circle()
+            .fill(Color.stone200)
+            .frame(width: 40, height: 40)
+            .overlay(
+              Image(systemName: "person.fill")
+                .foregroundColor(.stone400)
+            )
+            .overlay(
+              Circle()
+                .stroke(Color.white, lineWidth: 2)
+            )
+            .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
         }
       }
       .padding(.horizontal, 24)
@@ -274,7 +260,7 @@
     }
 
     private var swipeableCardsSection: some View {
-      VStack(spacing: 12) {
+      VStack(spacing: 0) {
         // 區塊標題與分頁指示點
         HStack {
           Text("Analytics")
@@ -306,15 +292,35 @@
               battery: deviceInfo?.battery ?? 0,
               readings: groupedHistory[deviceId] ?? []
             )
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .tag(index)
             .padding(.horizontal, 24)
           }
         }
         .tabViewStyle(.page(indexDisplayMode: .never))
-        .frame(height: 480)
+        .frame(height: 520)
       }
     }
 
+    /// 頁尾管理按鈕
+    private var footerView: some View {
+      Button(action: {}) {
+        HStack(spacing: 12) {
+          Image(systemName: "building.2.fill")
+            .foregroundColor(.stone300)
+          Text("Manage Warehouse")
+            .fontWeight(.semibold)
+        }
+        .foregroundColor(.stone50)
+        .padding(.horizontal, 24)
+        .padding(.vertical, 16)
+        .background(Color.stone900.opacity(0.9))
+        .background(.ultraThinMaterial)
+        .clipShape(Capsule())
+        .shadow(color: Color.black.opacity(0.2), radius: 20, x: 0, y: 10)
+      }
+      .padding(.bottom, 16)
+    }
   }
 
   // MARK: - Helper Components
@@ -350,6 +356,7 @@
               trailing
             }
           }
+          .layoutPriority(1)  // Prevent header compression
         }
 
         if let subtitle = config.subtitle {
@@ -443,7 +450,7 @@
       )
 
       ChartContainer(config: headerConfig) {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 10) {
 
           if showList {
             // List View
@@ -455,7 +462,7 @@
               .frame(height: 200)  // Keep chart height reasonable
 
             Divider()
-              .padding(.vertical, 4)
+              .padding(.vertical, 2)
 
             // Big Metrics (Current / Selected)
             HStack(spacing: 24) {
@@ -509,7 +516,8 @@
               if let date = displayReading?.createdAt {
                 VStack(alignment: .trailing) {
                   Text(date, format: .dateTime.hour().minute())
-                    .font(.title3)
+                    // .font(.title3)
+                    .font(.system(size: 20, weight: .bold))  // Prevent font jumping
                     .fontWeight(.bold)
                     .foregroundColor(.stone600)
                   Text(date, format: .dateTime.month().day())
@@ -536,21 +544,23 @@
           Spacer()
 
           HStack(spacing: 16) {
-            Label {
-              Text(String(format: "%.1f°", item.temperature))
-                .frame(width: 45, alignment: .trailing)
-            } icon: {
+            HStack(spacing: 4) {
               Image(systemName: "thermometer.medium")
                 .foregroundColor(colors["temp"])
+              Text(String(format: "%.1f°", item.temperature))
+                .fixedSize()
+                .lineLimit(1)
             }
+            .frame(width: 85, alignment: .leading)
 
-            Label {
-              Text(String(format: "%.0f%%", item.humidity))
-                .frame(width: 40, alignment: .trailing)
-            } icon: {
+            HStack(spacing: 4) {
               Image(systemName: "drop.fill")
                 .foregroundColor(colors["humid"])
+              Text(String(format: "%.0f%%", item.humidity))
+                .fixedSize()
+                .lineLimit(1)
             }
+            .frame(width: 75, alignment: .leading)
           }
           .font(.system(.callout, design: .monospaced))
         }

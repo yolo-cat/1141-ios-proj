@@ -61,6 +61,7 @@
     - **列表模式**：
       - 點擊右上方圖示切換。
       - 顯示詳細歷史數據列表 (Newest First)。
+      - **佈局優化**：卡片採用 **Top Alignment (.frame(alignment: .top))** 以確保模式切換時標題位置固定，並向下擴展。
 
 ### Footer (底部功能)
 
