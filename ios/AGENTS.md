@@ -26,6 +26,9 @@ TeaWarehouse-MVP iOS 端已完成 Stage 1 基礎建設，並已進入 **Stage 2*
   - 實作列表 **時間倒序 (Newest First)** 排列，確保最新數據置頂。
   - 圖表模式維持 **時間正序 (Oldest First)** 排列，確保繪圖正確。
 - **2025-12-23**: 更新 `DashboardView` Preview 資料，改用具備時間間隔的 Mock Data，以提升圖表與歷史列表的視覺真實度。
+- **2025-12-23**: 修復 `DashboardView` 預覽數據失效問題：優化 `MockSupabaseManager` 使其具備持久化 Mock 資料的能力，解決 `.onAppear` 生命週期導致數據被空結果覆蓋的 Bug。
+- **2025-12-23**: 進一步增強 Preview 穩定性：簡化 Mock 日期生成邏輯 (避免 Force Unwrap)、確保 `currentReading` 與歷史數據同步，並加強 `MockSupabaseManager` 的實現健壯性。
+- **2025-12-23**: 優化 `DashboardView` Swipe Cards (滑動分頁)：移除歷史列表中的 "Reading + 數字" 標籤，僅保留時間與數據，以提升視覺清爽度。
 
 ## 依據
 

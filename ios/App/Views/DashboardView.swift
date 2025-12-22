@@ -369,10 +369,6 @@
           List(Array(sortedData.enumerated()), id: \.offset) { index, item in
             HStack {
               HStack(spacing: 8) {
-                Text("Reading \(data.count - index)")  // Reverse index logic
-                  .font(.subheadline)
-                  .foregroundColor(.stone500)
-
                 // Timestamp Display (HH:mm)
                 Text(item.date, format: .dateTime.hour(.twoDigits(amPM: .omitted)).minute())
                   .font(.caption)
@@ -547,48 +543,45 @@
   }
 
   // MARK: - Preview Helpers
-  /// 預覽用 ViewModel，提供假資料給 SwiftUI Preview
   extension DashboardViewModel {
     fileprivate static var preview: DashboardViewModel {
       let manager = MockSupabaseManager()
       let viewModel = DashboardViewModel(manager: manager)
-      // Simulate an ALERT state for preview purposes
-      viewModel.currentReading = Reading(
-        id: 1,
-        createdAt: Date(),
-        deviceId: "tea_room_01",
-        temperature: 28.5,  // High temp (> 25 default)
-        humidity: 65.2
-      )
-      // Force check alert to update state
-      if let reading = viewModel.currentReading {
-        viewModel.checkAlert(for: reading)
-      }
 
-      let calendar = Calendar.current
       let now = Date()
-
-      viewModel.history = [
+      // Generate history with simple time intervals to avoid force-unwrap issues
+      let history = [
         Reading(
-          id: 1, createdAt: calendar.date(byAdding: .hour, value: -6, to: now)!, deviceId: "d1",
-          temperature: 22.5, humidity: 60.1),
+          id: 1, createdAt: now.addingTimeInterval(-6 * 3600), deviceId: "d1", temperature: 22.5,
+          humidity: 60.1),
         Reading(
-          id: 2, createdAt: calendar.date(byAdding: .hour, value: -5, to: now)!, deviceId: "d1",
-          temperature: 23.2, humidity: 62.5),
+          id: 2, createdAt: now.addingTimeInterval(-5 * 3600), deviceId: "d1", temperature: 23.2,
+          humidity: 62.5),
         Reading(
-          id: 3, createdAt: calendar.date(byAdding: .hour, value: -4, to: now)!, deviceId: "d1",
-          temperature: 24.8, humidity: 65.0),
+          id: 3, createdAt: now.addingTimeInterval(-4 * 3600), deviceId: "d1", temperature: 24.8,
+          humidity: 65.0),
         Reading(
-          id: 4, createdAt: calendar.date(byAdding: .hour, value: -3, to: now)!, deviceId: "d1",
-          temperature: 23.9, humidity: 64.2),
+          id: 4, createdAt: now.addingTimeInterval(-3 * 3600), deviceId: "d1", temperature: 23.9,
+          humidity: 64.2),
         Reading(
-          id: 5, createdAt: calendar.date(byAdding: .hour, value: -2, to: now)!, deviceId: "d1",
-          temperature: 25.1, humidity: 68.4),
+          id: 5, createdAt: now.addingTimeInterval(-2 * 3600), deviceId: "d1", temperature: 25.1,
+          humidity: 68.4),
         Reading(
-          id: 6, createdAt: calendar.date(byAdding: .hour, value: -1, to: now)!, deviceId: "d1",
-          temperature: 26.5, humidity: 65.7),
+          id: 6, createdAt: now.addingTimeInterval(-1 * 3600), deviceId: "d1", temperature: 26.5,
+          humidity: 65.7),
         Reading(id: 7, createdAt: now, deviceId: "d1", temperature: 24.2, humidity: 63.3),
       ]
+
+      // Inject data
+      viewModel.history = history
+      manager.mockHistory = history
+
+      // Sync currentReading with the latest history item
+      if let latest = history.last {
+        viewModel.currentReading = latest
+        viewModel.checkAlert(for: latest)
+      }
+
       viewModel.isSubscribed = true
       return viewModel
     }
@@ -597,17 +590,29 @@
   /// 假 Supabase 管理器，專供 Preview 或測試用，不實際連線
   private final class MockSupabaseManager: SupabaseManaging {
     var sessionToken: String? = nil
+    var mockHistory: [Reading] = []
+
     func signIn(email: String, password: String) async throws {}
     func signUp(email: String, password: String) async throws {}
-    func fetchHistory(limit: Int) async throws -> [Reading] { [] }
+
+    func fetchHistory(limit: Int) async throws -> [Reading] {
+      // Return local mock history to simulate API response
+      return mockHistory
+    }
+
     func signOut() {}
+
     func signIn(
       email: String, password: String, completion: @escaping (Result<Void, Error>) -> Void
     ) {}
     func signUp(
       email: String, password: String, completion: @escaping (Result<Void, Error>) -> Void
     ) {}
-    func fetchHistory(limit: Int, completion: @escaping (Result<[Reading], Error>) -> Void) {}
+
+    func fetchHistory(limit: Int, completion: @escaping (Result<[Reading], Error>) -> Void) {
+      completion(.success(mockHistory))
+    }
+
     func subscribeToReadings(onInsert: @escaping (Reading) -> Void) {}
     func unsubscribeFromReadings() {}
   }
