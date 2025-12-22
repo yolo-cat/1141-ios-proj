@@ -48,17 +48,19 @@
 ---
 
 - **Unified Monitoring (整合監控區)**：
-  - 使用 `TabView` 進行多裝置分頁，正式取代原本的獨立裝置卡片。
+  - 使用 `TabView` 進行多裝置分頁。
   - **整合卡片 (UnifiedClimateCard)**：
-    - **Header**：裝置名稱 (`deviceId`)、狀態指示燈 (Online/Offline)、電量/連線狀態。
-    - **圖表模式**：雙線疊置圖表 (Swift Charts)。
-      - 溫度：橙色 (`.orange`) 實線，搭配漸層充填區域。
-      - 濕度：藍色 (`.blue`) 虛線。
-      - 排序：**時間正序 (Oldest First)**。
+    - **架構**：採用 `ChartContainer` pattern，統一處理標題、圖標與外框樣式 (參考 React `ChartContainer`)。
+    - **交互**：支援 **拖曳手勢 (Drag Gesture)** 查看特定時間點的數值 (Chart Tooltip)。
+    - **Header**：裝置名稱、狀態 (Online 綠燈/Offline 灰燈)、電量/WiFi 狀態。
+    - **圖表模式** (Default)：
+      - **Temperature**：橙色漸層 Area + Line。
+      - **Humidity**：藍色虛線 Line。
+      - **指標**：左上方顯示當前 (或選中) 的大數值 (Big Metrics)。
+      - **X 軸**：顯示時間 (H:mm)，自動適應間距。
     - **列表模式**：
-      - 每行格式：`時間 | 溫度 | 濕度`。
-      - 排序：**時間倒序 (Newest First/Latest On Top)**。
-    - **切換機制**：右上方圖示切換 `showList` 狀態。
+      - 點擊右上方圖示切換。
+      - 顯示詳細歷史數據列表 (Newest First)。
 
 ### Footer (底部功能)
 

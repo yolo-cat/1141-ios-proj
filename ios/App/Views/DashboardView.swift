@@ -67,7 +67,7 @@
         }
 
         // 4. 頁尾：倉庫管理按鈕
-        footerView
+
       }
       .onAppear {
         // 畫面出現時啟動資料監聽與預設歷史查詢
@@ -109,20 +109,34 @@
 
         Spacer()
 
-        // 右：使用者頭像
-        Button(action: {}) {
-          Circle()
-            .fill(Color.stone200)
-            .frame(width: 40, height: 40)
-            .overlay(
-              Image(systemName: "person.fill")
-                .foregroundColor(.stone400)
-            )
-            .overlay(
-              Circle()
-                .stroke(Color.white, lineWidth: 2)
-            )
-            .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+        // 右：功能與頭像
+        HStack(spacing: 12) {
+          // 管理倉庫按鈕
+          Button(action: {}) {
+            Image(systemName: "building.2.fill")
+              .font(.system(size: 14, weight: .semibold))
+              .foregroundColor(.stone600)
+              .padding(10)
+              .background(Color.white)
+              .clipShape(Circle())
+              .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+          }
+
+          // 使用者頭像
+          Button(action: {}) {
+            Circle()
+              .fill(Color.stone200)
+              .frame(width: 40, height: 40)
+              .overlay(
+                Image(systemName: "person.fill")
+                  .foregroundColor(.stone400)
+              )
+              .overlay(
+                Circle()
+                  .stroke(Color.white, lineWidth: 2)
+              )
+              .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+          }
         }
       }
       .padding(.horizontal, 24)
@@ -156,7 +170,7 @@
               Text("\(Int(viewModel.currentReading?.temperature ?? 0))°")
                 .font(.system(size: 32, weight: .bold, design: .rounded))
                 .foregroundColor(.stone800)
-              Text("AVG TEMP")
+              Text("TEMP")
                 .font(.system(size: 10, weight: .medium))
                 .foregroundColor(.stone400)
             }
@@ -297,203 +311,361 @@
           }
         }
         .tabViewStyle(.page(indexDisplayMode: .never))
-        .frame(height: 320)
+        .frame(height: 480)
       }
     }
 
-    /// 頁尾管理按鈕
-    private var footerView: some View {
-      Button(action: {}) {
-        HStack(spacing: 12) {
-          Image(systemName: "building.2.fill")
-            .foregroundColor(.stone300)
-          Text("Manage Warehouse")
-            .fontWeight(.semibold)
-        }
-        .foregroundColor(.stone50)
-        .padding(.horizontal, 24)
-        .padding(.vertical, 16)
-        .background(Color.stone900.opacity(0.9))
-        .background(.ultraThinMaterial)
-        .clipShape(Capsule())
-        .shadow(color: Color.black.opacity(0.2), radius: 20, x: 0, y: 10)
-      }
-      .padding(.bottom, 32)
-    }
   }
 
   // MARK: - Helper Components
 
-  /// 整合環境數據卡片，顯示單一裝置的溫濕度歷史與狀態
-  struct UnifiedClimateCard: View {
-    /// 裝置 ID (作為標題)
-    let deviceId: String
-    /// 安裝位置 (作為副標題)
-    let location: String
-    /// 該裝置的狀態資訊 (從外部傳入)
-    let status: DashboardViewModel.DeviceInfo.Status
-    /// 該裝置的電量 (從外部傳入)
-    let battery: Int
-    /// 該裝置的資料來源
-    let readings: [Reading]
+  /// 統一的圖表容器，提供背景、邊框與標準化標題
+  /// 對應 React: ChartContainer
+  struct ChartContainer<Content: View>: View {
+    let config: ChartConfig
+    let content: () -> Content
 
-    /// 是否顯示清單模式
-    @State private var showList = false
-
-    var body: some View {
-      VStack(alignment: .leading, spacing: 0) {
-        // Header
-        HStack(alignment: .top) {
-          HStack(spacing: 12) {
-            ZStack {
-              Image(systemName: "drop.fill")
-                .offset(x: 4, y: 4)
-                .foregroundColor(.blue.opacity(0.8))
-              Image(systemName: "thermometer.medium")
-                .offset(x: -4, y: -4)
-                .foregroundColor(.orange.opacity(0.8))
-            }
-            .font(.system(size: 14))
-            .padding(10)
-            .background(Color.stone100)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-
-            VStack(alignment: .leading, spacing: 4) {
-              HStack(spacing: 6) {
-                Text(deviceId)
-                  .font(.headline)
-                  .foregroundColor(.stone800)
-
-                // Status Dot
-                Circle()
-                  .fill(status == .online ? Color.green : Color.stone300)
-                  .frame(width: 6, height: 6)
-                  .shadow(color: status == .online ? Color.green.opacity(0.4) : .clear, radius: 2)
-
-                // Battery or WiFi Status
-                if status == .online {
-                  HStack(spacing: 2) {
-                    Text("\(battery)%")
-                      .font(.system(size: 10, design: .monospaced))
-                      .foregroundColor(.stone400)
-                    Image(systemName: "battery.75")
-                      .font(.system(size: 10))
-                      .foregroundColor(battery < 20 ? .red : .stone400)
-                  }
-                } else {
-                  Image(systemName: "wifi.slash")
-                    .font(.system(size: 10))
-                    .foregroundColor(.stone400)
-                }
-              }
-
-              Text(location)
-                .font(.caption)
-                .fontWeight(.medium)
-                .textCase(.uppercase)
-                .foregroundColor(.stone400)
-            }
-          }
-          Spacer()
-
-          Button(action: { withAnimation { showList.toggle() } }) {
-            Image(systemName: showList ? "chart.xyaxis.line" : "list.bullet")
-              .padding(8)
-              .foregroundColor(.stone400)
-              .background(Color.stone100)
-              .clipShape(Circle())
-          }
-        }
-        .padding(24)
-
-        // Content
-        deviceContentView(readings: readings)
-      }
-      .background(Color.white)
-      .cornerRadius(32)
-      .shadow(color: Color.stone100, radius: 1, x: 0, y: 0)
-      .shadow(color: Color.black.opacity(0.02), radius: 10, x: 0, y: 4)
+    init(config: ChartConfig, @ViewBuilder content: @escaping () -> Content) {
+      self.config = config
+      self.content = content
     }
 
-    /// 單一裝置的數據內容視圖
-    @ViewBuilder
-    private func deviceContentView(readings: [Reading]) -> some View {
-      if showList {
-        // List Mode
-        let sortedData = readings.sorted { $0.createdAt > $1.createdAt }
-        List(Array(sortedData.enumerated()), id: \.offset) { _, item in
-          HStack(spacing: 0) {
-            Text(item.createdAt, format: .dateTime.hour(.twoDigits(amPM: .omitted)).minute())
-              .font(.caption)
-              .foregroundColor(.stone400)
-              .padding(.horizontal, 6)
-              .padding(.vertical, 2)
-              .background(Color.stone100)
-              .cornerRadius(4)
+    var body: some View {
+      VStack(alignment: .leading, spacing: 16) {
+        // Header
+        if let title = config.title {
+          HStack(spacing: 8) {
+            if let iconData = config.icon {
+              Image(systemName: iconData.0)
+                .foregroundColor(config.colors[iconData.1] ?? .stone800)
+            }
+            Text(title)
+              .font(.headline)
+              .fontWeight(.bold)
+              .foregroundColor(.stone800)
 
             Spacer()
 
-            Text("\(item.temperature, specifier: "%.1f")°")
-              .font(.system(.body, design: .monospaced))
-              .fontWeight(.bold)
-              .foregroundColor(.stone700)
-              .frame(width: 60, alignment: .trailing)
-
-            Text("/")
-              .font(.caption)
-              .foregroundColor(.stone300)
-              .padding(.horizontal, 6)
-
-            Text("\(item.humidity, specifier: "%.1f")%")
-              .font(.system(.body, design: .monospaced))
-              .fontWeight(.bold)
-              .foregroundColor(.stone700)
-              .frame(width: 60, alignment: .trailing)
-          }
-          .listRowSeparator(.hidden)
-          .listRowInsets(EdgeInsets(top: 6, leading: 24, bottom: 6, trailing: 24))
-        }
-        .listStyle(.plain)
-      } else {
-        // Chart Mode
-        let chartData = readings.sorted { $0.createdAt < $1.createdAt }
-        Chart {
-          ForEach(Array(chartData.enumerated()), id: \.offset) { index, item in
-            LineMark(
-              x: .value("Index", index),
-              y: .value("Temperature", item.temperature),
-              series: .value("Metric", "Temp")
-            )
-            .interpolationMethod(.catmullRom)
-            .foregroundStyle(.orange)
-
-            AreaMark(
-              x: .value("Index", index),
-              y: .value("Temperature", item.temperature)
-            )
-            .interpolationMethod(.catmullRom)
-            .foregroundStyle(
-              LinearGradient(
-                colors: [.orange.opacity(0.1), .orange.opacity(0.0)],
-                startPoint: .top,
-                endPoint: .bottom
-              )
-            )
-
-            LineMark(
-              x: .value("Index", index),
-              y: .value("Humidity", item.humidity),
-              series: .value("Metric", "Humid")
-            )
-            .interpolationMethod(.catmullRom)
-            .foregroundStyle(.blue)
-            .lineStyle(StrokeStyle(lineWidth: 2, dash: [5, 3]))
+            if let trailing = config.trailingView {
+              trailing
+            }
           }
         }
-        .chartXAxis(.hidden)
-        .chartYAxis(.hidden)
-        .padding(.horizontal, 24)
-        .padding(.bottom, 24)
+
+        if let subtitle = config.subtitle {
+          Text(subtitle)
+            .font(.subheadline)
+            .foregroundColor(.stone400)
+            .padding(.top, -12)  // Slightly closer to title
+        }
+
+        // Content
+        content()
+      }
+      .padding(20)
+      .background(Color.white)
+      .cornerRadius(32)  // Rounded-xl equivalent
+      .overlay(
+        RoundedRectangle(cornerRadius: 32)
+          .stroke(Color.stone200, lineWidth: 1)
+      )
+      .shadow(color: Color.black.opacity(0.05), radius: 12, x: 0, y: 4)
+    }
+  }
+
+  struct ChartConfig {
+    var title: String?
+    var subtitle: String?
+    var icon: (String, String)?  // (SystemName, ColorKey)
+    var colors: [String: Color]
+    var trailingView: AnyView?
+  }
+
+  /// 整合環境數據卡片，顯示單一裝置的溫濕度歷史與狀態
+  struct UnifiedClimateCard: View {
+    let deviceId: String
+    let location: String
+    let status: DashboardViewModel.DeviceInfo.Status
+    let battery: Int
+    let readings: [Reading]
+
+    @State private var showList = false
+    @State private var selectedDate: Date? = nil
+    @State private var selectedReading: Reading? = nil
+
+    // Colors map (Theming)
+    private let colors: [String: Color] = [
+      "temp": .orange,
+      "humid": .blue,
+    ]
+
+    var body: some View {
+      let lastReading = readings.max(by: { $0.createdAt < $1.createdAt })
+
+      let headerConfig = ChartConfig(
+        title: deviceId,
+        subtitle: location,
+        icon: ("cpu", "temp"),  // Placeholder icon
+        colors: colors,
+        trailingView: AnyView(
+          HStack {
+            // Status Indicators
+            HStack(spacing: 4) {
+              Circle()
+                .fill(status == .online ? Color.green : Color.stone300)
+                .frame(width: 8, height: 8)
+
+              if status == .online {
+                Image(systemName: battery < 20 ? "battery.25" : "battery.100")
+                  .foregroundColor(battery < 20 ? .red : .stone400)
+                  .font(.caption2)
+                Text("\(battery)%")
+                  .font(.caption2)
+                  .foregroundColor(.stone400)
+              } else {
+                Image(systemName: "wifi.slash")
+                  .foregroundColor(.stone400)
+                  .font(.caption2)
+              }
+            }
+            .padding(.trailing, 8)
+
+            Button(action: { withAnimation { showList.toggle() } }) {
+              Image(systemName: showList ? "chart.xyaxis.line" : "list.bullet")
+                .font(.system(size: 14))
+                .padding(8)
+                .foregroundColor(.stone500)
+                .background(Color.stone100)
+                .clipShape(Circle())
+            }
+          }
+        )
+      )
+
+      ChartContainer(config: headerConfig) {
+        VStack(alignment: .leading, spacing: 16) {
+
+          if showList {
+            // List View
+            listView(readings: readings)
+              .frame(height: 350)
+          } else {
+            // Chart View
+            chartView(readings: readings)
+              .frame(height: 200)  // Keep chart height reasonable
+
+            Divider()
+              .padding(.vertical, 4)
+
+            // Big Metrics (Current / Selected)
+            HStack(spacing: 24) {
+              let displayReading = selectedReading ?? lastReading
+
+              // Temperature
+              VStack(alignment: .leading, spacing: 2) {
+                Text("Temperature")
+                  .font(.caption)
+                  .fontWeight(.medium)
+                  .foregroundColor(.stone400)
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                  Text(String(format: "%.1f", displayReading?.temperature ?? 0))
+                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                    .foregroundColor(.stone800)
+                  Text("°C")
+                    .font(.callout)
+                    .foregroundColor(.stone400)
+                }
+              }
+              .padding(.leading, 8)
+              .overlay(alignment: .leading) {
+                Rectangle().fill(colors["temp"]!).frame(width: 4).cornerRadius(2).padding(
+                  .leading, -8)
+              }
+
+              // Humidity
+              VStack(alignment: .leading, spacing: 2) {
+                Text("Humidity")
+                  .font(.caption)
+                  .fontWeight(.medium)
+                  .foregroundColor(.stone400)
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                  Text(String(format: "%.0f", displayReading?.humidity ?? 0))
+                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                    .foregroundColor(.stone800)
+                  Text("%")
+                    .font(.callout)
+                    .foregroundColor(.stone400)
+                }
+              }
+              .padding(.leading, 8)
+              .overlay(alignment: .leading) {
+                Rectangle().fill(colors["humid"]!).frame(width: 4).cornerRadius(2).padding(
+                  .leading, -8)
+              }
+
+              Spacer()
+
+              // Time
+              if let date = displayReading?.createdAt {
+                VStack(alignment: .trailing) {
+                  Text(date, format: .dateTime.hour().minute())
+                    .font(.title3)
+                    .fontWeight(.bold)
+                    .foregroundColor(.stone600)
+                  Text(date, format: .dateTime.month().day())
+                    .font(.caption)
+                    .foregroundColor(.stone400)
+                }
+              }
+            }
+            .padding(.bottom, 8)
+          }
+        }
+      }
+    }
+
+    @ViewBuilder
+    private func listView(readings: [Reading]) -> some View {
+      let sortedData = readings.sorted { $0.createdAt > $1.createdAt }
+      List(Array(sortedData.enumerated()), id: \.element.id) { index, item in
+        HStack {
+          Text(item.createdAt, format: .dateTime.hour().minute())
+            .font(.system(.caption, design: .monospaced))
+            .foregroundColor(.stone500)
+
+          Spacer()
+
+          HStack(spacing: 16) {
+            Label {
+              Text(String(format: "%.1f°", item.temperature))
+                .frame(width: 45, alignment: .trailing)
+            } icon: {
+              Image(systemName: "thermometer.medium")
+                .foregroundColor(colors["temp"])
+            }
+
+            Label {
+              Text(String(format: "%.0f%%", item.humidity))
+                .frame(width: 40, alignment: .trailing)
+            } icon: {
+              Image(systemName: "drop.fill")
+                .foregroundColor(colors["humid"])
+            }
+          }
+          .font(.system(.callout, design: .monospaced))
+        }
+        .listRowSeparator(.hidden)
+        .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
+      }
+      .listStyle(.plain)
+    }
+
+    @ViewBuilder
+    private func chartView(readings: [Reading]) -> some View {
+      let chartData = readings.sorted { $0.createdAt < $1.createdAt }
+
+      Chart {
+        ForEach(chartData) { item in
+          // Ambient Temperature Area (Gradient)
+          AreaMark(
+            x: .value("Time", item.createdAt),
+            y: .value("Temp", item.temperature)
+          )
+          .interpolationMethod(.catmullRom)
+          .foregroundStyle(
+            LinearGradient(
+              colors: [colors["temp"]!.opacity(0.1), colors["temp"]!.opacity(0.01)],
+              startPoint: .top,
+              endPoint: .bottom
+            )
+          )
+
+          // Temperature Line
+          LineMark(
+            x: .value("Time", item.createdAt),
+            y: .value("Temp", item.temperature),
+            series: .value("Metric", "Temperature")
+          )
+          .interpolationMethod(.catmullRom)
+          .foregroundStyle(colors["temp"]!)
+          // .symbol(Circle()) // Clean look
+          // .symbolSize(0)
+
+          // Humidity Line (Dashed)
+          LineMark(
+            x: .value("Time", item.createdAt),
+            y: .value("Humidity", item.humidity),
+            series: .value("Metric", "Humidity")
+          )
+          .interpolationMethod(.catmullRom)
+          .foregroundStyle(colors["humid"]!)
+          .lineStyle(StrokeStyle(lineWidth: 2, dash: [5, 3]))
+
+          // Selection Rule
+          if let selectedDate,
+            let currentItem = selectedReading,
+            currentItem.id == item.id
+          {  // Simple check, or find closest
+
+            RuleMark(x: .value("Selected", selectedDate))
+              .lineStyle(StrokeStyle(lineWidth: 2, dash: [5, 5]))
+              .foregroundStyle(Color.stone400.opacity(0.5))
+
+            PointMark(
+              x: .value("Time", item.createdAt),
+              y: .value("Temp", item.temperature)
+            )
+            .foregroundStyle(colors["temp"]!)
+            .symbolSize(60)
+            .annotation(position: .top) {
+              // Inline annotation if needed, or rely on the big metrics update
+            }
+
+            PointMark(
+              x: .value("Time", item.createdAt),
+              y: .value("Humidity", item.humidity)
+            )
+            .foregroundStyle(colors["humid"]!)
+            .symbolSize(60)
+          }
+        }
+      }
+      .chartYScale(domain: .automatic(includesZero: false))
+      .chartXAxis {
+        AxisMarks(values: .automatic(desiredCount: 5)) { value in
+          if value.as(Date.self) != nil {
+            AxisValueLabel(format: .dateTime.hour(.defaultDigits(amPM: .omitted)).minute())
+              .foregroundStyle(Color.stone400)
+          }
+        }
+      }
+      .chartYAxis {
+        AxisMarks(position: .leading)
+      }
+      .chartOverlay { proxy in
+        GeometryReader { geometry in
+          Rectangle().fill(.clear).contentShape(Rectangle())
+            .gesture(
+              DragGesture(minimumDistance: 0)
+                .onChanged { value in
+                  let x = value.location.x
+                  if let date: Date = proxy.value(atX: x) {
+                    selectedDate = date
+                    // Find closest reading
+                    if let reading = readings.min(by: {
+                      abs($0.createdAt.timeIntervalSince(date))
+                        < abs($1.createdAt.timeIntervalSince(date))
+                    }) {
+                      selectedReading = reading
+                    }
+                  }
+                }
+                .onEnded { _ in
+                  selectedDate = nil
+                  selectedReading = nil
+                }
+            )
+        }
       }
     }
   }
