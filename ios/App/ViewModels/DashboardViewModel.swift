@@ -11,14 +11,45 @@
   @MainActor
   @Observable
   final class DashboardViewModel {
+    /// Alert types for sensor readings
+    enum AlertType {
+      case normal
+      case temperature
+      case humidity
+      case both
+
+      var title: String {
+        switch self {
+        case .normal: return "Normal"
+        case .temperature, .humidity, .both: return "Alert"
+        }
+      }
+
+      var description: String {
+        switch self {
+        case .normal: return "All systems operational."
+        case .temperature: return "Temperature exceeded threshold."
+        case .humidity: return "Humidity exceeded threshold."
+        case .both: return "Temperature & Humidity critical."
+        }
+      }
+
+      var isCritical: Bool {
+        self != .normal
+      }
+    }
+
     var currentReading: Reading?
     var history: [Reading] = []
     var isSubscribed: Bool = false
     var lastAlertAt: Date?
+    var alertType: AlertType = .normal
 
     var temperatureThreshold: Float
     var humidityThreshold: Float
     var alertHandler: (() -> Void)?
+
+    // Internal state to track if an alert has been triggered continuously
     private var alertActive = false
 
     private let manager: SupabaseManaging
@@ -63,7 +94,15 @@
         do {
           let records = try await manager.fetchHistory(limit: limit)
           await MainActor.run {
-            self.history = records.sorted { $0.createdAt < $1.createdAt }
+            let sortedHistory = records.sorted { $0.createdAt < $1.createdAt }
+            self.history = sortedHistory
+            // Initial data population if real-time hasn't triggered yet
+            if self.currentReading == nil {
+              self.currentReading = sortedHistory.last
+              if let last = sortedHistory.last {
+                self.checkAlert(for: last)
+              }
+            }
           }
         } catch {
           await MainActor.run { self.history = [] }
@@ -76,10 +115,21 @@
       checkAlert(for: reading)
     }
 
-    private func checkAlert(for reading: Reading) {
+    func checkAlert(for reading: Reading) {
       let overTemp = reading.temperature > temperatureThreshold
       let overHum = reading.humidity > humidityThreshold
-      guard overTemp || overHum else {
+
+      if overTemp && overHum {
+        alertType = .both
+      } else if overTemp {
+        alertType = .temperature
+      } else if overHum {
+        alertType = .humidity
+      } else {
+        alertType = .normal
+      }
+
+      guard alertType.isCritical else {
         alertActive = false
         return
       }

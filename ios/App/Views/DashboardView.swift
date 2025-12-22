@@ -138,17 +138,19 @@
         VStack(alignment: .leading) {
           HStack(alignment: .top) {
             VStack(alignment: .leading) {
-              HStack(alignment: .lastTextBaseline, spacing: 8) {
-                Text("\(Int(viewModel.currentReading?.temperature ?? 0))°")
-                  .font(.system(size: 32, weight: .bold, design: .rounded))
-                  .foregroundColor(.stone800)
-
-                if let date = viewModel.currentReading?.createdAt {
-                  Text(date.formatted(date: .omitted, time: .shortened))
-                    .font(.system(size: 10, weight: .medium, design: .monospaced))
-                    .foregroundColor(.stone400)
+              if let date = viewModel.currentReading?.createdAt {
+                HStack(spacing: 4) {
+                  Image(systemName: "clock")
+                  Text(date, format: .dateTime.hour(.twoDigits(amPM: .omitted)).minute())
                 }
+                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                .foregroundColor(.stone400)
+                .padding(.bottom, 2)
               }
+
+              Text("\(Int(viewModel.currentReading?.temperature ?? 0))°")
+                .font(.system(size: 32, weight: .bold, design: .rounded))
+                .foregroundColor(.stone800)
               Text("AVG TEMP")
                 .font(.system(size: 10, weight: .medium))
                 .foregroundColor(.stone400)
@@ -178,35 +180,59 @@
         .cornerRadius(32)
         .shadow(color: Color.black.opacity(0.05), radius: 20, x: 0, y: 4)
 
-        // 警示卡片
+        // 警示卡片 (Dynamic Alert Card - Option B: Dynamic Surface)
         VStack(alignment: .leading) {
           HStack {
             Text("STATUS")
-              .font(.system(size: 10, weight: .bold))
+              .font(.system(size: 11, weight: .bold))  // Slightly larger label
               .opacity(0.6)
             Spacer()
             Circle()
-              .fill(Color.red)
+              .fill(viewModel.alertType.isCritical ? Color.red : Color.green)
               .frame(width: 8, height: 8)
+              .shadow(
+                color: viewModel.alertType.isCritical
+                  ? Color.red.opacity(0.5) : Color.green.opacity(0.5), radius: 4)
           }
-          Spacer()
-          HStack(spacing: 6) {
-            Image(systemName: "exclamationmark.triangle.fill")
-            Text("Alert")
-              .fontWeight(.bold)
-          }
-          .foregroundColor(.red.opacity(0.8))
-          .padding(.bottom, 4)
 
-          Text("Filter replacement required in Zone B.")
-            .font(.caption)
+          Spacer()
+
+          VStack(alignment: .leading, spacing: 8) {  // Group Title and Desc for better density
+            HStack(spacing: 8) {
+              Image(
+                systemName: viewModel.alertType.isCritical
+                  ? "exclamationmark.triangle.fill" : "checkmark.circle.fill"
+              )
+              .font(.title2)  // Larger icon
+              Text(viewModel.alertType.title)
+                .font(.title2)  // Larger title (was default body)
+                .fontWeight(.bold)
+                .fontDesign(.rounded)
+            }
+            // 主標題顏色：Alert 時顯著紅色，Normal 時綠色
+            .foregroundColor(viewModel.alertType.isCritical ? .red : .green.opacity(0.8))
+
+            Text(viewModel.alertType.description)
+              .font(.subheadline)  // Larger description (was caption)
+              .fontWeight(.medium)
+              .lineLimit(3)  // Allow more lines if needed
+              .fixedSize(horizontal: false, vertical: true)
+              // 描述文字顏色：Alert 時跟隨主色調，Normal 時使用標準深灰
+              .foregroundColor(viewModel.alertType.isCritical ? .red.opacity(0.8) : .stone500)
+          }
         }
         .padding(20)
         .frame(height: 160)
-        .background(Color.stone800)
-        .foregroundColor(.stone100)
+        // 背景色：Alert 時使用淡紅背景 (Dynamic Surface)，Normal 時純白
+        .background(viewModel.alertType.isCritical ? Color.red.opacity(0.08) : Color.white)
+        // 邊框：Alert 時增加紅色邊框強化警示與可訪問性
+        .overlay(
+          RoundedRectangle(cornerRadius: 32)
+            .stroke(viewModel.alertType.isCritical ? Color.red : Color.clear, lineWidth: 1)
+        )
         .cornerRadius(32)
-        .shadow(color: Color.black.opacity(0.1), radius: 20, x: 0, y: 4)
+        .shadow(color: Color.black.opacity(0.05), radius: 20, x: 0, y: 4)
+        .animation(.spring, value: viewModel.alertType.isCritical)
       }
     }
 
@@ -236,7 +262,7 @@
             subtitle: "Last 7 Days",
             iconName: "thermometer.medium",
             color: .orange,
-            data: viewModel.history.map { $0.temperature },
+            data: viewModel.history.map { ($0.createdAt, $0.temperature) },
             unit: "°C"
           )
           .tag(0)
@@ -247,7 +273,7 @@
             subtitle: "Last 7 Days",
             iconName: "drop.fill",
             color: .blue,
-            data: viewModel.history.map { $0.humidity },
+            data: viewModel.history.map { ($0.createdAt, $0.humidity) },
             unit: "%"
           )
           .tag(1)
@@ -295,8 +321,8 @@
     let iconName: String
     /// 主色
     let color: Color
-    /// 資料來源（數值陣列）
-    let data: [Float]
+    /// 資料來源（時間與數值 Tuple）
+    let data: [(date: Date, value: Float)]
     /// 單位字串
     let unit: String
 
@@ -338,13 +364,28 @@
 
         // Content
         if showList {
-          List(Array(data.enumerated()), id: \.offset) { index, value in
+          // List Mode: Sorted by Time Descending (Newest First)
+          let sortedData = data.sorted { $0.date > $1.date }
+          List(Array(sortedData.enumerated()), id: \.offset) { index, item in
             HStack {
-              Text("Reading \(index + 1)")
-                .font(.subheadline)
-                .foregroundColor(.stone500)
+              HStack(spacing: 8) {
+                Text("Reading \(data.count - index)")  // Reverse index logic
+                  .font(.subheadline)
+                  .foregroundColor(.stone500)
+
+                // Timestamp Display (HH:mm)
+                Text(item.date, format: .dateTime.hour(.twoDigits(amPM: .omitted)).minute())
+                  .font(.caption)
+                  .foregroundColor(.stone400)
+                  .padding(.horizontal, 6)
+                  .padding(.vertical, 2)
+                  .background(Color.stone100)
+                  .cornerRadius(4)
+              }
+
               Spacer()
-              Text("\(value, specifier: "%.1f")\(unit)")
+
+              Text("\(item.value, specifier: "%.1f")\(unit)")
                 .font(.system(.body, design: .monospaced))
                 .fontWeight(.bold)
                 .foregroundColor(.stone700)
@@ -354,11 +395,15 @@
           }
           .listStyle(.plain)
         } else {
+          // Chart Mode: Sorted by Time Ascending (Oldest First) - Assumed from ViewModel
+          // Ensure chronological order for proper plotting
+          let chartData = data.sorted { $0.date < $1.date }
+
           Chart {
-            ForEach(Array(data.enumerated()), id: \.offset) { index, value in
+            ForEach(Array(chartData.enumerated()), id: \.offset) { index, item in
               LineMark(
                 x: .value("Index", index),
-                y: .value("Value", value)
+                y: .value("Value", item.value)
               )
               .interpolationMethod(.catmullRom)
               .foregroundStyle(color)
@@ -371,7 +416,7 @@
 
               AreaMark(
                 x: .value("Index", index),
-                y: .value("Value", value)
+                y: .value("Value", item.value)
               )
               .interpolationMethod(.catmullRom)
               .foregroundStyle(
@@ -507,21 +552,42 @@
     fileprivate static var preview: DashboardViewModel {
       let manager = MockSupabaseManager()
       let viewModel = DashboardViewModel(manager: manager)
+      // Simulate an ALERT state for preview purposes
       viewModel.currentReading = Reading(
         id: 1,
         createdAt: Date(),
         deviceId: "tea_room_01",
-        temperature: 24.5,
+        temperature: 28.5,  // High temp (> 25 default)
         humidity: 65.2
       )
+      // Force check alert to update state
+      if let reading = viewModel.currentReading {
+        viewModel.checkAlert(for: reading)
+      }
+
+      let calendar = Calendar.current
+      let now = Date()
+
       viewModel.history = [
-        Reading(id: 1, createdAt: Date(), deviceId: "d1", temperature: 22, humidity: 60),
-        Reading(id: 2, createdAt: Date(), deviceId: "d1", temperature: 23, humidity: 62),
-        Reading(id: 3, createdAt: Date(), deviceId: "d1", temperature: 24, humidity: 65),
-        Reading(id: 4, createdAt: Date(), deviceId: "d1", temperature: 23, humidity: 64),
-        Reading(id: 5, createdAt: Date(), deviceId: "d1", temperature: 25, humidity: 68),
-        Reading(id: 6, createdAt: Date(), deviceId: "d1", temperature: 26, humidity: 65),
-        Reading(id: 7, createdAt: Date(), deviceId: "d1", temperature: 24, humidity: 63),
+        Reading(
+          id: 1, createdAt: calendar.date(byAdding: .hour, value: -6, to: now)!, deviceId: "d1",
+          temperature: 22.5, humidity: 60.1),
+        Reading(
+          id: 2, createdAt: calendar.date(byAdding: .hour, value: -5, to: now)!, deviceId: "d1",
+          temperature: 23.2, humidity: 62.5),
+        Reading(
+          id: 3, createdAt: calendar.date(byAdding: .hour, value: -4, to: now)!, deviceId: "d1",
+          temperature: 24.8, humidity: 65.0),
+        Reading(
+          id: 4, createdAt: calendar.date(byAdding: .hour, value: -3, to: now)!, deviceId: "d1",
+          temperature: 23.9, humidity: 64.2),
+        Reading(
+          id: 5, createdAt: calendar.date(byAdding: .hour, value: -2, to: now)!, deviceId: "d1",
+          temperature: 25.1, humidity: 68.4),
+        Reading(
+          id: 6, createdAt: calendar.date(byAdding: .hour, value: -1, to: now)!, deviceId: "d1",
+          temperature: 26.5, humidity: 65.7),
+        Reading(id: 7, createdAt: now, deviceId: "d1", temperature: 24.2, humidity: 63.3),
       ]
       viewModel.isSubscribed = true
       return viewModel
@@ -544,5 +610,14 @@
     func fetchHistory(limit: Int, completion: @escaping (Result<[Reading], Error>) -> Void) {}
     func subscribeToReadings(onInsert: @escaping (Reading) -> Void) {}
     func unsubscribeFromReadings() {}
+  }
+
+  // Expose checkAlert for preview only to force state update
+  extension DashboardViewModel {
+    func forceCheckAlert() {
+      if let reading = currentReading {
+        checkAlert(for: reading)
+      }
+    }
   }
 #endif

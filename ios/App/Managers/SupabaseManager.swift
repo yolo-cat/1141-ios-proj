@@ -37,16 +37,29 @@
 
     private struct ReadingRow: Codable {
       let id: Int64
-      let created_at: Date
-      let device_id: String
+      let createdAt: Date
+      let deviceId: String
       let temperature: Float
       let humidity: Float
 
+      enum CodingKeys: String, CodingKey {
+        case id
+        case createdAt = "created_at"
+        case deviceId = "device_id"
+        case temperature, humidity
+      }
+
       var model: Reading {
         Reading(
-          id: id, createdAt: created_at, deviceId: device_id, temperature: temperature,
+          id: id, createdAt: createdAt, deviceId: deviceId, temperature: temperature,
           humidity: humidity)
       }
+    }
+
+    private static var supabaseDecoder: JSONDecoder {
+      let decoder = JSONDecoder()
+      decoder.dateDecodingStrategy = .iso8601
+      return decoder
     }
 
     init() {
@@ -65,15 +78,17 @@
     }
 
     func fetchHistory(limit: Int) async throws -> [Reading] {
-      let rows: [ReadingRow] = try await supabase.database
+      let response = try await supabase.database
         .from("readings")
         .select()
         .order("created_at", ascending: false)
         .limit(limit)
         .execute()
-        .value
+
+      let rows = try SupabaseManager.supabaseDecoder.decode([ReadingRow].self, from: response.data)
+
       // return ascending by created_at for chart
-      return rows.sorted { $0.created_at < $1.created_at }.map(\.model)
+      return rows.sorted { $0.createdAt < $1.createdAt }.map(\.model)
     }
 
     func signOut() {
@@ -136,9 +151,11 @@
         guard let channel else { return }
         for await insertion in channel.postgresChange(InsertAction.self, table: "readings") {
           do {
-            let row = try insertion.decodeRecord(as: ReadingRow.self, decoder: JSONDecoder())
+            let row = try insertion.decodeRecord(
+              as: ReadingRow.self, decoder: SupabaseManager.supabaseDecoder)
             await MainActor.run { onInsert(row.model) }
           } catch {
+            print("Decoding error: \(error)")
             continue
           }
         }

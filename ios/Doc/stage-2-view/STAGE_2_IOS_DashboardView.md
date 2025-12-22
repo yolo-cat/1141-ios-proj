@@ -13,11 +13,52 @@
 - **Bento Grid (便當佈局)**：
   - **即時數據卡片**：顯示當前溫度與濕度。數據來源為 `DashboardViewModel.currentReading`：
     - 採用最近一筆數據，並顯示其更新時間 (`createdAt`)。
-  - **異常警報卡片**：顯示當前警報狀態。若 `lastAlertAt` 在近期且警報活躍，顯示紅色高亮；否則顯示「系統正常」。數據來源為 `DashboardViewModel.isSubscribed` 與警報邏輯。
+  - **異常警報卡片**：顯示當前警報狀態。(詳見下文 [異常警報卡片設計方案](#異常警報卡片設計方案-design-proposals))
+    - 預設採用 **方案 B (Dynamic Surface)** 進行實作。
+
+### 異常警報卡片設計方案 (Design Proposals)
+
+為提升 Stage 2 儀表板的視覺層次與資訊傳達效率，提供三種符合 iOS 現代化設計語言 (Modern SwiftUI) 的方案。
+
+#### 方案 A：Minimalist Access (Apple Home 風格)
+
+> **設計關鍵詞**：Clean, Typography, Whitespace
+
+- **視覺特徵**：
+  - 維持純白背景 (`Color.white`) 與標準陰影。
+  - 將狀態濃縮為右上角的 **Status Pill** (膠囊標籤)。
+  - **Normal**：灰色文字 + 綠色小圓點。
+  - **Alert**：紅色背景膠囊 + 白色文字 + 警示圖標。
+- **適用場景**：當儀表板資訊密度極高，需要降低視覺噪音時。
+
+#### 方案 B：Dynamic Surface (Contextual 通知風格) **[推薦]**
+
+> **設計關鍵詞**：Immersive, Color Semantics, Glanceability
+
+- **視覺特徵**：
+  - **容器染色**：背景色隨狀態改變，提供最強烈的視覺回饋。
+  - **Normal**：`Color.white` (或極淡灰)，搭配標準綠色圖標。
+  - **Alert**：`Color.red.opacity(0.1)` (淡紅背景)，文字轉為 `.red`，並疊加紅色邊框 (`.stroke`)。
+  - **動畫**：狀態切換時使用 `.animation(.spring)` 進行背景色過渡。
+- **優勢**：在「掃視」(Glance) 情境下能最快傳達異常，符合 Dashboard 核心目的。
+
+#### 方案 C：Glassmorphism HUD (高科技風格)
+
+> **設計關鍵詞**：Translucency, Mesh Gradient, Neumorphism
+
+- **視覺特徵**：
+  - **背景**：使用 `UltraThinMaterial` (磨砂玻璃)。
+  - **光暈**：底部圖層放置 `AngularGradient` 或 Mesh Gradient，隨狀態旋轉或呼吸。
+  - **Normal**：青色/藍色冷光呼吸。
+  - **Alert**：橙紅色/紅色警示光脈衝 (Pulse)。
+- **適用場景**：若 App 整體走向 Cyberpunk 或高科技工業風。
+
+---
+
 - **Swipe Cards (滑動分頁)**：
   - 使用 SwiftUI `TabView` 配合 `.tabViewStyle(.page(indexDisplayMode: .always))` 實現。
-  - **卡片 1 (溫度)**：顯示溫度趨勢圖 (Swift Charts) 與歷史列表。
-  - **卡片 2 (濕度)**：顯示濕度趨勢圖 (Swift Charts) 與歷史列表。
+  - **卡片 1 (溫度)**：顯示溫度趨勢圖 (Swift Charts) 與歷史列表 (List)。列表需按時間倒序排列 (Newest First)，並顯示時間 (`HH:mm`)。
+  - **卡片 2 (濕度)**：顯示濕度趨勢圖 (Swift Charts) 與歷史列表 (List)。列表需按時間倒序排列 (Newest First)，並顯示時間 (`HH:mm`)。
   - **卡片 3 (裝置)**：顯示裝置狀態列表 (Online/Offline)。
 
 ### Footer (底部功能)
@@ -30,246 +71,100 @@
 
 ---
 
-## SwiftUI 實作範例
+## 實作參考
 
-本範例展示如何與 `DashboardViewModel` 互動，並實作上述 UI 組件。
+本視圖與 `DashboardViewModel` 深度互動，以下為關鍵代碼片段與後端數據整合指引。
 
-### DashboardView.swift
+### 1. 視圖實作 (DashboardView.swift)
 
 ```swift
-import SwiftUI
-import Charts
+// 即時數據卡片實作片段
+private var bentoGrid: some View {
+    HStack(spacing: 16) {
+        VStack(alignment: .leading) {
+            HStack(alignment: .lastTextBaseline, spacing: 8) {
+                Text("\(Int(viewModel.currentReading?.temperature ?? 0))°")
+                    .font(.system(size: 32, weight: .bold, design: .rounded))
+                    .foregroundColor(.stone800)
 
-struct DashboardView: View {
-    @State private var viewModel = DashboardViewModel.makeDefault()
-    @State private var selectedTab = 0
-
-    var body: some View {
-        ZStack {
-            Color("Stone50").ignoresSafeArea()
-
-            VStack(spacing: 24) {
-                // Header
-                headerView
-
-                ScrollView {
-                    VStack(spacing: 24) {
-                        // Bento Grid
-                        bentoGridView
-
-                        // Analytics Swipe Cards
-                        analyticsSwipeView
-                    }
-                    .padding(.horizontal)
+                // 更新時間顯示 (Stage 2 規格: 24H)
+                if let date = viewModel.currentReading?.createdAt {
+                    Text(date, format: .dateTime.hour(.twoDigits(amPM: .omitted)).minute())
+                        .font(.system(size: 10, weight: .medium, design: .monospaced))
+                        .foregroundColor(.stone400)
                 }
             }
-
-            // Floating Footer Button
-            VStack {
-                Spacer()
-                manageButton
-            }
-            .padding(.bottom, 32)
-        }
-        .onAppear {
-            viewModel.startListening()
-            viewModel.fetchDefaultHistory()
-        }
-        .onDisappear {
-            viewModel.stopListening()
-        }
-    }
-
-    private var headerView: some View {
-        HStack {
-            Text("Pu'er Sense")
-                .font(.system(.caption, design: .serif))
-                .fontWeight(.bold)
-                .tracking(2)
-                .foregroundColor(.secondary)
-
+            Text("AVG TEMP").font(.system(size: 10, weight: .medium)).foregroundColor(.stone400)
             Spacer()
-
-            Menu {
-                Button("Menghai Depot") { }
-                Button("Kunming Store") { }
-            } label: {
-                HStack {
-                    Text("Menghai Depot")
-                    Image(systemName: "chevron.down")
-                }
-                .font(.subheadline.bold())
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .background(Color.white.opacity(0.8))
-                .clipShape(Capsule())
-            }
-
-            Spacer()
-
-            Image(systemName: "person.circle.fill")
-                .resizable()
-                .frame(width: 32, height: 32)
-                .background(Circle().fill(.ultraThinMaterial))
+            // ... 濕度顯示邏輯 ...
         }
-        .padding(.horizontal)
-    }
-
-    private var bentoGridView: some View {
-        HStack(spacing: 16) {
-            // Live Metrics
-            VStack(alignment: .leading, spacing: 12) {
-                HStack(alignment: .lastTextBaseline) {
-                    Text("\(String(format: "%.1f", viewModel.currentReading?.temperature ?? 0))°")
-                        .font(.system(size: 32, weight: .bold))
-                    Spacer()
-                    if let date = viewModel.currentReading?.createdAt {
-                        Text(date.formatted(date: .omitted, time: .shortened))
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                    }
-                }
-
-                Text("Temp").font(.caption).foregroundColor(.secondary)
-
-                Divider()
-
-                VStack(alignment: .leading) {
-                    Text("\(Int(viewModel.currentReading?.humidity ?? 0))%")
-                        .font(.system(size: 32, weight: .bold))
-                    Text("Humidity").font(.caption).foregroundColor(.secondary)
-                }
-            }
-            .padding()
-            .frame(maxWidth: .infinity, maxHeight: 180)
-            .background(Color.white)
-            .cornerRadius(32)
-            .shadow(color: .black.opacity(0.05), radius: 10)
-
-            // Alert Status
-            VStack(alignment: .leading) {
-                HStack {
-                    Text("Status").font(.caption.bold()).opacity(0.6)
-                    Spacer()
-                    Circle()
-                        .fill(viewModel.lastAlertAt != nil ? Color.red : Color.green)
-                        .frame(width: 8, height: 8)
-                }
-
-                Spacer()
-
-                if viewModel.lastAlertAt != nil {
-                    Label("Alert", systemImage: "exclamationmark.triangle.fill")
-                        .foregroundColor(.red)
-                        .font(.headline)
-                    Text("Condition threshold exceeded.")
-                        .font(.caption)
-                        .lineLimit(2)
-                } else {
-                    Label("Normal", systemImage: "checkmark.circle.fill")
-                        .foregroundColor(.green)
-                        .font(.headline)
-                    Text("System is monitoring.")
-                        .font(.caption)
-                }
-            }
-            .padding()
-            .frame(maxWidth: .infinity, maxHeight: 180)
-            .background(Color("Stone800")) // 配合深色卡片風格
-            .foregroundColor(.white)
-            .cornerRadius(32)
-        }
-    }
-
-    private var analyticsSwipeView: some View {
-        VStack(alignment: .leading) {
-            Text("Analytics")
-                .font(.headline)
-                .padding(.leading, 4)
-
-            TabView(selection: $selectedTab) {
-                HistoryChartCard(title: "Temperature History", data: viewModel.history, type: .temperature)
-                    .tag(0)
-                HistoryChartCard(title: "Humidity History", data: viewModel.history, type: .humidity)
-                    .tag(1)
-                DeviceStatusCard()
-                    .tag(2)
-            }
-            .frame(height: 320)
-            .tabViewStyle(.page(indexDisplayMode: .always))
-        }
-    }
-
-    private var manageButton: some View {
-        Button(action: {}) {
-            HStack {
-                Image(systemName: "shippingbox.fill")
-                Text("Manage Warehouse")
-                    .fontWeight(.semibold)
-            }
-            .padding()
-            .frame(maxWidth: 320)
-            .background(Color.black)
-            .foregroundColor(.white)
-            .clipShape(Capsule())
-            .shadow(radius: 10)
-        }
-    }
-}
-
-// 子組件例：趨勢圖卡片
-struct HistoryChartCard: View {
-    let title: String
-    let data: [Reading]
-    let type: MeasurementType
-
-    enum MeasurementType { case temperature, humidity }
-
-    var body: some View {
-        VStack(alignment: .leading) {
-            Text(title).font(.subheadline.bold())
-
-            Chart(data) { reading in
-                LineMark(
-                    x: .value("Time", reading.createdAt),
-                    y: .value("Value", type == .temperature ? reading.temperature : reading.humidity)
-                )
-                .foregroundStyle(type == .temperature ? Color.orange : Color.blue)
-            }
-            .frame(height: 200)
-            .padding(.vertical)
-        }
-        .padding()
-        .background(Color.white)
-        .cornerRadius(32)
-        .padding(.horizontal, 4)
-    }
-}
-
-struct DeviceStatusCard: View {
-    var body: some View {
-        VStack(alignment: .leading) {
-            Text("Devices").font(.subheadline.bold())
-            List {
-                HStack {
-                    Image(systemName: "cpu")
-                    Text("ESP32-Upper-01")
-                    Spacer()
-                    Text("Online").foregroundColor(.green).font(.caption)
-                }
-            }
-            .listStyle(.plain)
-        }
-        .padding()
-        .background(Color.white)
-        .cornerRadius(32)
-        .padding(.horizontal, 4)
+        .padding(20).frame(height: 160).background(Color.white).cornerRadius(32)
     }
 }
 ```
 
+### 2. 數據解碼 (SupabaseManager.swift)
+
+為確保 `created_at` (timestamptz) 正確解析，必須在 `JSONDecoder` 中設定 `.iso8601` 策略：
+
+```swift
+private static var supabaseDecoder: JSONDecoder {
+    let decoder = JSONDecoder()
+    decoder.dateDecodingStrategy = .iso8601
+    return decoder
+}
+
+// 訂閱用法
+let row = try insertion.decodeRecord(as: ReadingRow.self, decoder: SupabaseManager.supabaseDecoder)
+```
+
+---
+
+## Backend & Database Context (AI Agents Only)
+
+### 資料庫架構 (readings 表)
+
+| 欄位名        | 資料類型    | 說明                 |
+| :------------ | :---------- | :------------------- |
+| `id`          | bigint      | 主鍵                 |
+| `created_at`  | timestamptz | ISO8601 格式更新時間 |
+| `device_id`   | text        | 設備標籤 (如 ESP-01) |
+| `temperature` | real        | 溫度數值 (Celsius)   |
+| `humidity`    | real        | 濕度數值 (%)         |
+
+### MCP 強化理解方案
+
+AI AGENTS 可使用 `supabase-mcp-server` 進行即時驗證：
+
+- **檢查即時數據**：
+  ```sql
+  -- 使用 mcp_supabase-mcp-server_execute_sql (Project ID: fvovzbskokfqtzcyidqy)
+  SELECT * FROM readings ORDER BY created_at DESC LIMIT 5;
+  ```
+- **檢查表格結構**：
+  ```sql
+  SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'readings';
+  ```
+
+---
+
+---
+
+## 架構與依賴 (Architecture & Dependencies)
+
+- **Design Pattern**: MVVM + Observation (SwiftUI 17+)
+- **View**: `DashboardView` (@[App/Views/DashboardView.swift])
+- **ViewModel**: `DashboardViewModel` (@[App/ViewModels/DashboardViewModel.swift])
+  - **Dependency**: `SupabaseManager` (Singleton) for Realtime Data.
+- **Data Flow (Call Stack)**:
+  1. `DashboardView` calls `viewModel.startListening()` on appear.
+  2. `SupabaseManager` receives realtime payload.
+  3. Payload decoded via `ReadingRow` internal struct.
+  4. `DashboardViewModel` updates `@Observable var currentReading`.
+  5. View reacts instantly.
+
 ## 注意事項
 
-1. **ViewModel 生命週期**：請確保在 `onAppear` 呼叫 `startListening()`，並在 `onDisappear` 呼叫 `stopListening()` 以節省資源。
-2. **數據流**：所有即時更新均應透過 `@Observable` 的 `history` 與 `currentReading` 自動驅動視圖更新。
-3. **門檻值**：警報邏輯已封裝於 `DashboardViewModel` 內，UI 僅需根據 `lastAlertAt` 顯示對應狀態。
+1. **ViewModel 生命週期**：請確保在 `onAppear` 呼叫 `startListening()`。
+2. **數據流**：所有即時更新均由 `DashboardViewModel.currentReading` 驅動，UI 切勿持有重複狀態。
+3. **解碼健壯性**：若 Realtime 斷開或解碼失敗，應在 `SupabaseManager` 捕獲 error 並嘗試重連。
