@@ -16,34 +16,19 @@
     - **佈局**：垂直排列，圖標 (`thermometer`, `drop`) 置於數據左側，與時間圖標 (`clock`) 靠左對齊。
     - **來源**：`DashboardViewModel.currentReading` (@[App/ViewModels/DashboardViewModel.swift])。
   - **異常警報卡片**：顯示當前系統警報狀態。
-    - **實作樣式**：採用 **方案 B (Dynamic Surface)**，背景色與邊框隨狀態變更。
-    - **來源**：`DashboardViewModel.alertType` (@[App/ViewModels/DashboardViewModel.swift]: `checkAlert(for:)`)。
 
-### 異常警報卡片設計方案 (Design Proposals)
+#### 異常警報卡片規格 (Alert Card Spec - Ambient Aura)
 
-為提升 Stage 2 儀表板的視覺層次與資訊傳達效率，提供三種符合 iOS 現代化設計語言 (Modern SwiftUI) 的方案。
-
-#### 方案 A：Minimalist Access (Apple Home 風格)
-
-> **設計關鍵詞**：Clean, Typography, Whitespace
-
-- **視覺特徵**：
-  - 維持純白背景 (`Color.white`) 與標準陰影。
-  - 將狀態濃縮為右上角的 **Status Pill** (膠囊標籤)。
-  - **Normal**：灰色文字 + 綠色小圓點。
-  - **Alert**：紅色背景膠囊 + 白色文字 + 警示圖標。
-- **適用場景**：當儀表板資訊密度極高，需要降低視覺噪音時。
-
-#### 實作細節：方案 B (Dynamic Surface)
-
-- **容器染色**：背景色隨狀態改變。
-  - **Normal**：`Color.white` 背景，搭配標準綠色圖標與「Normal」標題。
-  - **Alert**：`Color.red.opacity(0.08)` 背景，紅色的 `.stroke` 邊框，強化視覺顯著性。
-- **排版優化**：
-  - **Main Title**：放大至 `.title2` (Bold Rounded)。
-  - **Icon**：使用 `.title2` 尺寸的 `exclamationmark.triangle.fill`。
-  - **Description**：放大至 `.subheadline` 並設為 `.fontWeight(.medium)`，確保易讀性。
-- **動畫**：狀態切換時使用 `.animation(.spring)`。
+- **設計哲學**: **Emotional (情緒化)**，讓狀態成為背景氛圍，而非單純的標籤。
+- **背景視覺 (Ambient Background)**:
+  - **Normal**: `LinearGradient` (Blue/Mint, opacity 0.1)，模擬清新空氣。
+  - **Alert**: `LinearGradient` (Red/Orange, opacity 0.15~0.2)，模擬警示氛圍。
+- **主體內容**:
+  - **Layout**: 居中或左對齊的簡潔佈局，留白呼吸感。
+  - **Icon**: 使用 `.hierarchical` 渲染模式的 `shield.fill` 或 `exclamationmark.triangle.fill`。
+  - **Typography**: 標題與描述採用 `.design(.rounded)`，顏色隨背景深淺自動調整 (主要為深色文字搭配淡色背景)。
+- **互動**: 點擊可展開查看詳情 (預留)。
+- **動畫**: 狀態切換時背景顏色平滑過渡 (`.animation(.easeInOut(duration: 0.5))`)。
 
 ---
 

@@ -187,59 +187,8 @@
         .cornerRadius(32)
         .shadow(color: Color.black.opacity(0.05), radius: 20, x: 0, y: 4)
 
-        // 警示卡片 (Dynamic Alert Card - Option B: Dynamic Surface)
-        VStack(alignment: .leading) {
-          HStack {
-            Text("狀態")
-              .font(.system(size: 11, weight: .bold))  // Slightly larger label
-              .opacity(0.6)
-            Spacer()
-            Circle()
-              .fill(viewModel.alertType.isCritical ? Color.red : Color.green)
-              .frame(width: 8, height: 8)
-              .shadow(
-                color: viewModel.alertType.isCritical
-                  ? Color.red.opacity(0.5) : Color.green.opacity(0.5), radius: 4)
-          }
-
-          Spacer()
-
-          VStack(alignment: .leading, spacing: 8) {  // Group Title and Desc for better density
-            HStack(spacing: 8) {
-              Image(
-                systemName: viewModel.alertType.isCritical
-                  ? "exclamationmark.triangle.fill" : "checkmark.circle.fill"
-              )
-              .font(.title2)  // Larger icon
-              Text(viewModel.alertType.title)
-                .font(.title2)  // Larger title (was default body)
-                .fontWeight(.bold)
-                .fontDesign(.rounded)
-            }
-            // 主標題顏色：Alert 時顯著紅色，Normal 時綠色
-            .foregroundColor(viewModel.alertType.isCritical ? .red : .green.opacity(0.8))
-
-            Text(viewModel.alertType.description)
-              .font(.subheadline)  // Larger description (was caption)
-              .fontWeight(.medium)
-              .lineLimit(3)  // Allow more lines if needed
-              .fixedSize(horizontal: false, vertical: true)
-              // 描述文字顏色：Alert 時跟隨主色調，Normal 時使用標準深灰
-              .foregroundColor(viewModel.alertType.isCritical ? .red.opacity(0.8) : .stone500)
-          }
-        }
-        .padding(20)
-        .frame(height: 160)
-        // 背景色：Alert 時使用淡紅背景 (Dynamic Surface)，Normal 時純白
-        .background(viewModel.alertType.isCritical ? Color.red.opacity(0.08) : Color.white)
-        // 邊框：Alert 時增加紅色邊框強化警示與可訪問性
-        .overlay(
-          RoundedRectangle(cornerRadius: 32)
-            .stroke(viewModel.alertType.isCritical ? Color.red : Color.clear, lineWidth: 1)
-        )
-        .cornerRadius(32)
-        .shadow(color: Color.black.opacity(0.05), radius: 20, x: 0, y: 4)
-        .animation(.spring, value: viewModel.alertType.isCritical)
+        // 異常警報卡片 component
+        ExceptionAlertCard(alertType: viewModel.alertType)
       }
     }
 
@@ -386,6 +335,81 @@
     var icon: (String, String)?  // (SystemName, ColorKey)
     var colors: [String: Color]
     var trailingView: AnyView?
+  }
+
+  /// 異常警報卡片組件 (Ambient Aura)
+  /// 使用動態漸層背景提供情緒化的狀態回饋
+  struct ExceptionAlertCard: View {
+    let alertType: DashboardViewModel.AlertType
+
+    var body: some View {
+      ZStack(alignment: .leading) {
+        // Ambient Background
+        LinearGradient(
+          colors: alertType.isCritical
+            ? [Color.red.opacity(0.15), Color.orange.opacity(0.15)]  // Alert: 暖色調
+            : [Color.blue.opacity(0.08), Color.mint.opacity(0.1)],  // Normal: 清新冷色調
+          startPoint: .topLeading,
+          endPoint: .bottomTrailing
+        )
+
+        VStack(alignment: .leading, spacing: 12) {
+          // Top Row: Icon
+          HStack {
+            Image(systemName: alertType.isCritical ? "exclamationmark.triangle.fill" : "leaf.fill")
+              .font(.system(size: 28))
+              .symbolRenderingMode(.hierarchical)
+              .foregroundColor(alertType.isCritical ? .red : .mint)
+              .background(
+                Circle()
+                  .fill(Color.white.opacity(0.6))
+                  .frame(width: 48, height: 48)
+                  .shadow(color: .black.opacity(0.02), radius: 5, x: 0, y: 2)
+              )
+
+            Spacer()
+
+            // Subtle Status Text
+            Text(alertType.isCritical ? "ALERT" : "NORMAL")
+              .font(.caption)
+              .fontWeight(.bold)
+              .tracking(2)
+              .foregroundColor(alertType.isCritical ? .red.opacity(0.6) : .teal.opacity(0.6))
+          }
+          .padding(.bottom, 4)
+
+          Spacer()
+
+          // Main Text Content
+          VStack(alignment: .leading, spacing: 4) {
+            Text(alertType.isCritical ? "系統異常" : "環境良好")
+              .font(.system(.title2, design: .rounded))
+              .fontWeight(.bold)
+              .foregroundColor(.stone800)
+
+            Text(alertType.description)
+              .font(.subheadline)
+              .fontWeight(.medium)
+              .foregroundColor(.stone500)
+              .lineLimit(2)
+              .fixedSize(horizontal: false, vertical: true)
+          }
+        }
+        .padding(24)
+      }
+      .frame(height: 160)
+      .background(Color.white)  // Fallback/Base
+      .cornerRadius(32)
+      .shadow(
+        color: alertType.isCritical ? Color.red.opacity(0.1) : Color.black.opacity(0.05),
+        radius: 20, x: 0, y: 10
+      )
+      .overlay(
+        RoundedRectangle(cornerRadius: 32)
+          .stroke(alertType.isCritical ? Color.red.opacity(0.2) : Color.clear, lineWidth: 1)
+      )
+      .animation(.easeInOut(duration: 0.5), value: alertType.isCritical)
+    }
   }
 
   /// 整合環境數據卡片，顯示單一裝置的溫濕度歷史與狀態
