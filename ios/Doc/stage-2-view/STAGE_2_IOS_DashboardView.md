@@ -57,9 +57,12 @@
 
 - **Swipe Cards (滑動分頁)**：
   - 使用 SwiftUI `TabView` 配合 `.tabViewStyle(.page(indexDisplayMode: .always))` 實現。
-  - **卡片 1 (溫度)**：顯示溫度趨勢圖 (Swift Charts) 與歷史列表 (List)。列表需按時間倒序排列 (Newest First)，並顯示時間 (`HH:mm`)。
-  - **卡片 2 (濕度)**：顯示濕度趨勢圖 (Swift Charts) 與歷史列表 (List)。列表需按時間倒序排列 (Newest First)，並顯示時間 (`HH:mm`)。
-  - **卡片 3 (裝置)**：顯示裝置狀態列表 (Online/Offline)。
+  - **卡片 1 (環境數據)**：整合顯示溫度與濕度。
+    - **圖表模式 (預設)**：Swift Charts 雙線疊加圖表。溫度為橘色實線，濕度為藍色虛線。
+    - **列表模式**：整合歷史列表。每行同時顯示 `時間 | 溫度 | 濕度`。
+    - **切換機制**：右上角設有切換按鈕，點擊可於圖表與列表間切換。
+    - **多裝置支援**：當數據來自多個 `device_id` 時，使用巢狀 TabView 滑動瀏覽各裝置數據。頂部顯示 Device Indicator 標示當前裝置。
+  - **卡片 2 (裝置)**：顯示裝置狀態列表 (Online/Offline)。
 
 ### Footer (底部功能)
 

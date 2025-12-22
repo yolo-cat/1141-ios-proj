@@ -29,6 +29,8 @@ TeaWarehouse-MVP iOS 端已完成 Stage 1 基礎建設，並已進入 **Stage 2*
 - **2025-12-23**: 修復 `DashboardView` 預覽數據失效問題：優化 `MockSupabaseManager` 使其具備持久化 Mock 資料的能力，解決 `.onAppear` 生命週期導致數據被空結果覆蓋的 Bug。
 - **2025-12-23**: 進一步增強 Preview 穩定性：簡化 Mock 日期生成邏輯 (避免 Force Unwrap)、確保 `currentReading` 與歷史數據同步，並加強 `MockSupabaseManager` 的實現健壯性。
 - **2025-12-23**: 優化 `DashboardView` Swipe Cards (滑動分頁)：移除歷史列表中的 "Reading + 數字" 標籤，僅保留時間與數據，以提升視覺清爽度。
+- **2025-12-23**: 規劃並批准 **Unified Climate Card** 重構方案：將溫度與濕度整合為單一卡片，支援雙線圖表與整合歷史列表，並保留切換按鈕。
+- **2025-12-23**: 實作**多裝置滑動瀏覽**：按 `device_id` 分組數據，支援巢狀 TabView 切換各裝置環境數據，頂部 Device Indicator 顯示當前裝置。
 
 ## 依據
 

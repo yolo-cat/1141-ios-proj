@@ -237,6 +237,21 @@
     }
 
     /// 滑動卡片區：歷史圖表與設備清單
+    /// 按 deviceId 分組的數據
+    private var groupedHistory: [String: [Reading]] {
+      Dictionary(grouping: viewModel.history, by: { $0.deviceId })
+    }
+
+    /// 排序後的裝置 ID 列表
+    private var activeDeviceIds: [String] {
+      Array(groupedHistory.keys).sorted()
+    }
+
+    /// 總分頁數 (裝置數量 + 設備列表卡片)
+    private var totalTabs: Int {
+      activeDeviceIds.count + 1
+    }
+
     private var swipeableCardsSection: some View {
       VStack(spacing: 12) {
         // 區塊標題與分頁指示點
@@ -246,7 +261,7 @@
             .foregroundColor(.stone700)
           Spacer()
           HStack(spacing: 6) {
-            ForEach(0..<3) { index in
+            ForEach(0..<totalTabs, id: \.self) { index in
               Circle()
                 .fill(activeTab == index ? Color.stone800 : Color.stone300)
                 .frame(width: 6, height: 6)
@@ -257,30 +272,21 @@
 
         // 橫向滑動卡片（TabView）
         TabView(selection: $activeTab) {
-          ChartCard(
-            title: "Temperature History",
-            subtitle: "Last 7 Days",
-            iconName: "thermometer.medium",
-            color: .orange,
-            data: viewModel.history.map { ($0.createdAt, $0.temperature) },
-            unit: "°C"
-          )
-          .tag(0)
-          .padding(.horizontal, 24)
+          // 為每個裝置顯示一張整合卡片
+          let deviceIds = activeDeviceIds
+          ForEach(Array(deviceIds.enumerated()), id: \.offset) { index, deviceId in
+            UnifiedClimateCard(
+              deviceId: deviceId,
+              subtitle: "Temperature & Humidity",
+              readings: groupedHistory[deviceId] ?? []
+            )
+            .tag(index)
+            .padding(.horizontal, 24)
+          }
 
-          ChartCard(
-            title: "Humidity History",
-            subtitle: "Last 7 Days",
-            iconName: "drop.fill",
-            color: .blue,
-            data: viewModel.history.map { ($0.createdAt, $0.humidity) },
-            unit: "%"
-          )
-          .tag(1)
-          .padding(.horizontal, 24)
-
+          // 最後一頁：設備清單
           DeviceListCard(devices: devices)
-            .tag(2)
+            .tag(totalTabs - 1)
             .padding(.horizontal, 24)
         }
         .tabViewStyle(.page(indexDisplayMode: .never))
@@ -311,20 +317,14 @@
 
   // MARK: - Helper Components
 
-  /// 單一圖表卡片元件，顯示溫度或濕度歷史資料
-  struct ChartCard: View {
-    /// 卡片標題
-    let title: String
+  /// 整合環境數據卡片，顯示單一裝置的溫濕度歷史
+  struct UnifiedClimateCard: View {
+    /// 裝置 ID (作為標題)
+    let deviceId: String
     /// 副標題
     let subtitle: String
-    /// SF Symbol 圖示名稱
-    let iconName: String
-    /// 主色
-    let color: Color
-    /// 資料來源（時間與數值 Tuple）
-    let data: [(date: Date, value: Float)]
-    /// 單位字串
-    let unit: String
+    /// 該裝置的資料來源
+    let readings: [Reading]
 
     /// 是否顯示清單模式
     @State private var showList = false
@@ -334,14 +334,21 @@
         // Header
         HStack(alignment: .top) {
           HStack(spacing: 12) {
-            Image(systemName: iconName)
-              .padding(10)
-              .background(color.opacity(0.1))
-              .foregroundColor(color)
-              .clipShape(RoundedRectangle(cornerRadius: 12))
+            ZStack {
+              Image(systemName: "drop.fill")
+                .offset(x: 4, y: 4)
+                .foregroundColor(.blue.opacity(0.8))
+              Image(systemName: "thermometer.medium")
+                .offset(x: -4, y: -4)
+                .foregroundColor(.orange.opacity(0.8))
+            }
+            .font(.system(size: 14))
+            .padding(10)
+            .background(Color.stone100)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
 
             VStack(alignment: .leading) {
-              Text(title)
+              Text(deviceId)
                 .font(.headline)
                 .foregroundColor(.stone800)
               Text(subtitle)
@@ -352,6 +359,7 @@
             }
           }
           Spacer()
+
           Button(action: { withAnimation { showList.toggle() } }) {
             Image(systemName: showList ? "chart.xyaxis.line" : "list.bullet")
               .padding(8)
@@ -363,77 +371,94 @@
         .padding(24)
 
         // Content
-        if showList {
-          // List Mode: Sorted by Time Descending (Newest First)
-          let sortedData = data.sorted { $0.date > $1.date }
-          List(Array(sortedData.enumerated()), id: \.offset) { index, item in
-            HStack {
-              HStack(spacing: 8) {
-                // Timestamp Display (HH:mm)
-                Text(item.date, format: .dateTime.hour(.twoDigits(amPM: .omitted)).minute())
-                  .font(.caption)
-                  .foregroundColor(.stone400)
-                  .padding(.horizontal, 6)
-                  .padding(.vertical, 2)
-                  .background(Color.stone100)
-                  .cornerRadius(4)
-              }
-
-              Spacer()
-
-              Text("\(item.value, specifier: "%.1f")\(unit)")
-                .font(.system(.body, design: .monospaced))
-                .fontWeight(.bold)
-                .foregroundColor(.stone700)
-            }
-            .listRowSeparator(.hidden)
-            .listRowInsets(EdgeInsets(top: 8, leading: 24, bottom: 8, trailing: 24))
-          }
-          .listStyle(.plain)
-        } else {
-          // Chart Mode: Sorted by Time Ascending (Oldest First) - Assumed from ViewModel
-          // Ensure chronological order for proper plotting
-          let chartData = data.sorted { $0.date < $1.date }
-
-          Chart {
-            ForEach(Array(chartData.enumerated()), id: \.offset) { index, item in
-              LineMark(
-                x: .value("Index", index),
-                y: .value("Value", item.value)
-              )
-              .interpolationMethod(.catmullRom)
-              .foregroundStyle(color)
-              .symbol {
-                Circle()
-                  .fill(color)
-                  .frame(width: 8, height: 8)
-                  .overlay(Circle().stroke(Color.white, lineWidth: 2))
-              }
-
-              AreaMark(
-                x: .value("Index", index),
-                y: .value("Value", item.value)
-              )
-              .interpolationMethod(.catmullRom)
-              .foregroundStyle(
-                LinearGradient(
-                  colors: [color.opacity(0.2), color.opacity(0.0)],
-                  startPoint: .top,
-                  endPoint: .bottom
-                )
-              )
-            }
-          }
-          .chartXAxis(.hidden)
-          .chartYAxis(.hidden)
-          .padding(.horizontal, 24)
-          .padding(.bottom, 24)
-        }
+        deviceContentView(readings: readings)
       }
       .background(Color.white)
       .cornerRadius(32)
-      .shadow(color: Color.stone100, radius: 1, x: 0, y: 0)  // Border-like shadow
+      .shadow(color: Color.stone100, radius: 1, x: 0, y: 0)
       .shadow(color: Color.black.opacity(0.02), radius: 10, x: 0, y: 4)
+    }
+
+    /// 單一裝置的數據內容視圖
+    @ViewBuilder
+    private func deviceContentView(readings: [Reading]) -> some View {
+      if showList {
+        // List Mode
+        let sortedData = readings.sorted { $0.createdAt > $1.createdAt }
+        List(Array(sortedData.enumerated()), id: \.offset) { _, item in
+          HStack(spacing: 0) {
+            Text(item.createdAt, format: .dateTime.hour(.twoDigits(amPM: .omitted)).minute())
+              .font(.caption)
+              .foregroundColor(.stone400)
+              .padding(.horizontal, 6)
+              .padding(.vertical, 2)
+              .background(Color.stone100)
+              .cornerRadius(4)
+
+            Spacer()
+
+            Text("\(item.temperature, specifier: "%.1f")°")
+              .font(.system(.body, design: .monospaced))
+              .fontWeight(.bold)
+              .foregroundColor(.stone700)
+              .frame(width: 60, alignment: .trailing)
+
+            Text("/")
+              .font(.caption)
+              .foregroundColor(.stone300)
+              .padding(.horizontal, 6)
+
+            Text("\(item.humidity, specifier: "%.1f")%")
+              .font(.system(.body, design: .monospaced))
+              .fontWeight(.bold)
+              .foregroundColor(.stone700)
+              .frame(width: 60, alignment: .trailing)
+          }
+          .listRowSeparator(.hidden)
+          .listRowInsets(EdgeInsets(top: 6, leading: 24, bottom: 6, trailing: 24))
+        }
+        .listStyle(.plain)
+      } else {
+        // Chart Mode
+        let chartData = readings.sorted { $0.createdAt < $1.createdAt }
+        Chart {
+          ForEach(Array(chartData.enumerated()), id: \.offset) { index, item in
+            LineMark(
+              x: .value("Index", index),
+              y: .value("Temperature", item.temperature),
+              series: .value("Metric", "Temp")
+            )
+            .interpolationMethod(.catmullRom)
+            .foregroundStyle(.orange)
+
+            AreaMark(
+              x: .value("Index", index),
+              y: .value("Temperature", item.temperature)
+            )
+            .interpolationMethod(.catmullRom)
+            .foregroundStyle(
+              LinearGradient(
+                colors: [.orange.opacity(0.1), .orange.opacity(0.0)],
+                startPoint: .top,
+                endPoint: .bottom
+              )
+            )
+
+            LineMark(
+              x: .value("Index", index),
+              y: .value("Humidity", item.humidity),
+              series: .value("Metric", "Humid")
+            )
+            .interpolationMethod(.catmullRom)
+            .foregroundStyle(.blue)
+            .lineStyle(StrokeStyle(lineWidth: 2, dash: [5, 3]))
+          }
+        }
+        .chartXAxis(.hidden)
+        .chartYAxis(.hidden)
+        .padding(.horizontal, 24)
+        .padding(.bottom, 24)
+      }
     }
   }
 
@@ -551,25 +576,28 @@
       let now = Date()
       // Generate history with simple time intervals to avoid force-unwrap issues
       let history = [
+        // Device 1: ESP-01
         Reading(
-          id: 1, createdAt: now.addingTimeInterval(-6 * 3600), deviceId: "d1", temperature: 22.5,
-          humidity: 60.1),
+          id: 1, createdAt: now.addingTimeInterval(-6 * 3600), deviceId: "ESP-01",
+          temperature: 22.5, humidity: 60.1),
         Reading(
-          id: 2, createdAt: now.addingTimeInterval(-5 * 3600), deviceId: "d1", temperature: 23.2,
-          humidity: 62.5),
+          id: 2, createdAt: now.addingTimeInterval(-4 * 3600), deviceId: "ESP-01",
+          temperature: 24.8, humidity: 65.0),
         Reading(
-          id: 3, createdAt: now.addingTimeInterval(-4 * 3600), deviceId: "d1", temperature: 24.8,
-          humidity: 65.0),
+          id: 3, createdAt: now.addingTimeInterval(-2 * 3600), deviceId: "ESP-01",
+          temperature: 25.1, humidity: 68.4),
+        Reading(id: 4, createdAt: now, deviceId: "ESP-01", temperature: 24.2, humidity: 63.3),
+
+        // Device 2: ESP-02
         Reading(
-          id: 4, createdAt: now.addingTimeInterval(-3 * 3600), deviceId: "d1", temperature: 23.9,
-          humidity: 64.2),
+          id: 10, createdAt: now.addingTimeInterval(-5 * 3600), deviceId: "ESP-02",
+          temperature: 18.2, humidity: 45.5),
         Reading(
-          id: 5, createdAt: now.addingTimeInterval(-2 * 3600), deviceId: "d1", temperature: 25.1,
-          humidity: 68.4),
+          id: 11, createdAt: now.addingTimeInterval(-3 * 3600), deviceId: "ESP-02",
+          temperature: 19.5, humidity: 48.2),
         Reading(
-          id: 6, createdAt: now.addingTimeInterval(-1 * 3600), deviceId: "d1", temperature: 26.5,
-          humidity: 65.7),
-        Reading(id: 7, createdAt: now, deviceId: "d1", temperature: 24.2, humidity: 63.3),
+          id: 12, createdAt: now.addingTimeInterval(-1 * 3600), deviceId: "ESP-02",
+          temperature: 20.8, humidity: 44.1),
       ]
 
       // Inject data
