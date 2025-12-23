@@ -17,6 +17,7 @@
     @Bindable var viewModel: DashboardViewModel
     @State private var activeTab = 0
     @State private var showProfileSheet = false
+    @State private var showWarehouseSheet = false
     @Environment(\.scenePhase) private var scenePhase
 
     // Grouped history by device ID
@@ -66,6 +67,9 @@
       }
       .sheet(isPresented: $showProfileSheet) {
         ProfileView(viewModel: ProfileViewModel())
+      }
+      .sheet(isPresented: $showWarehouseSheet) {
+        WarehouseView()
       }
       .onChange(of: scenePhase) { _, newPhase in
         switch newPhase {
@@ -180,7 +184,7 @@
     }
 
     private var footerView: some View {
-      Button(action: {}) {
+      Button(action: { showWarehouseSheet = true }) {
         HStack {
           Image(systemName: "building.2.fill")
           Text("Manage Warehouse")
