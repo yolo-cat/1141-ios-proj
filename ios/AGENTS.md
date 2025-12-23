@@ -79,8 +79,8 @@ TeaWarehouse-MVP iOS 端已完成 Stage 1 基礎建設，並已進入 **Stage 2*
   - `LiveTicker.swift`: 滾動數字動畫，iOS 17+ 使用 `contentTransition(.numericText())` 並提供 iOS 16 降級方案。
   - 所有組件嚴格遵循 `DesignSystem.swift` 配色規範。
 - **2025-12-23**: **修復與實作 Widget Extension (Home Screen)**:
-  - **Fix**: 偵測到 Bundle ID 變更為 `ZZT.ios.widget`，已同步更新 Widget `kind` 以解除 `Failed to get descriptors` 錯誤。
-  - **Simulator**: 識別出 `Locked` 錯誤屬模擬器預期行為（需解鎖螢幕或喚醒模擬器）。
+  - **Root Cause Fix**: 解決 `Failed to get descriptors` 錯誤。根本原因是 Widget 引用了主 App 的 `Color("Canvas")` 命名顏色，但該顏色不存在於 Widget 的 Asset Catalog 中，導致啟動時崩潰。
+  - **Solution**: 將 `Color("Canvas")` 替換為 `Color(uiColor: .systemGroupedBackground)`，使用系統顏色避免 Asset Catalog 依賴。
   - **UI**: 實作 `com_puer_sense.swift`，支援 `systemSmall` / `systemMedium` 尺寸，整合 Indigo (溫度) 與 Green (濕度) 的品牌視覺。
 
 ## 依據
