@@ -1,14 +1,23 @@
-# TeaWarehouse-MVP 文檔索引（Stage 1）
+# TeaWarehouse-MVP (Stage 2)
 
-依 Stage 1 規格整理的文檔入口：
+本專案為 iOS 課程期末專題：普洱茶倉環境監控系統。
 
-- [PRD_STAGE1.md](PRD_STAGE1.md)：整體產品需求。
-- [DESIGN_STAGE1.md](DESIGN_STAGE1.md)：高層設計與子專案設計索引。
-- [TASKS_STAGE1.md](TASKS_STAGE1.md)：跨子專案任務清單與連結。
-- [stage_1_prompt.md](stage_1_prompt.md)：AI Agent 啟動指令。
+## 專案狀態：Stage 2 (Neo-Bento UI Refactor)
 
-子專案入口：
+目前專案正處於 Stage 2，重點在於將 iOS App 的 UI 重構為現代化的 **Neo-Bento (新便當盒風格)**，並整合進階的視覺化功能與警報邏輯。
 
-- [`supabase/README.md`](supabase/README.md)
-- [`esp32/README.md`](esp32/README.md)
-- [`ios/README.md`](ios/README.md)
+### 核心文檔
+
+- [AGENTS.md](AGENTS.md)：AI Coding Agent 工作指南與快速指令。
+- [stage-1.md](stage-1.md)：Stage 1 (MVP) 歷史存檔。
+
+### 子專案入口
+
+- **iOS App**: [`ios/README.md`](ios/README.md)
+  - 關鍵文檔：[`ios/Doc/stage-2-view/STAGE_2_IOS_DashboardView.md`](ios/Doc/stage-2-view/STAGE_2_IOS_DashboardView.md)
+- **Supabase Backend**: [`supabase/README.md`](supabase/README.md)
+- **ESP32 Firmware**: [`esp32/README.md`](esp32/README.md)
+
+---
+
+© 2025 TeaWarehouse Team

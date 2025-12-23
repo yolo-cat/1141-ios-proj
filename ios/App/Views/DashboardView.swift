@@ -17,6 +17,7 @@
     @Bindable var viewModel: DashboardViewModel
     @State private var activeTab = 0
     @State private var showProfileSheet = false
+    @Environment(\.scenePhase) private var scenePhase
 
     // Grouped history by device ID
     private var groupedHistory: [String: [Reading]] {
@@ -65,6 +66,19 @@
       }
       .sheet(isPresented: $showProfileSheet) {
         ProfileView(viewModel: ProfileViewModel())
+      }
+      .onChange(of: scenePhase) { _, newPhase in
+        switch newPhase {
+        case .active:
+          // App returned to foreground: reconnect and refresh data
+          viewModel.startListening()
+          viewModel.fetchDefaultHistory()
+        case .inactive, .background:
+          // App entering background: pause Realtime to save resources
+          viewModel.stopListening()
+        @unknown default:
+          break
+        }
       }
     }
 

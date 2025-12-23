@@ -1,40 +1,41 @@
-# AI Coding Agent 指南（階段一）
+/\*
 
-本檔案提供 AI Coding Agent 在本倉庫執行工作的快速入口，內容來源為 `PRD_STAGE1.md`、 `TASKS_STAGE1.md`，以及補充的 `stage_1_prompt.md`。
+- File: AGENTS.md
+- Purpose: AI Coding Agent 工作指南 (階段二)
+- Architecture: Monorepo Indexing
+- AI Context: Stage 2 focuses on Neon-Bento UI and Advanced Features.
+  \*/
 
-## 關鍵文件
-- [PRD_STAGE1.md](PRD_STAGE1.md)：完整 PRD，涵蓋硬體、後端、iOS App 功能需求與資料表結構。
-- [TASKS_STAGE1.md](TASKS_STAGE1.md)：跨子專案的任務指引與入口鏈結。
-- [stage_1_prompt.md](stage_1_prompt.md)：可直接貼給 AI Agent 的啟動指令範例。
+# AI Coding Agent 指南 (階段二)
 
-## PRD 摘要
-- 專案：普洱茶倉環境監控系統（TeaWarehouse-MVP），重點在即時性、原生 iOS 體驗、資料視覺化。
-- 技術堆疊：
-  - ESP32 + DHT11（C++/Arduino）
-  - Supabase（PostgreSQL/RLS）
-  - iOS 17+ / SwiftUI（`supabase-swift`、`Swift Charts`）
-- 資料表 `readings`：
-  - 欄位：id、created_at、device_id、temperature、humidity
-  - RLS：允許 anon 寫入，僅 authenticated 可讀取
-- ESP32 韌體：
-  - 開機連 Wi-Fi、斷線自動重連
-  - 標準讀取週期 5 分鐘，Demo 模式 10 秒；若 NaN 則略過
-  - 以 REST POST JSON 上傳至 Supabase
-- iOS App（MVVM）：
-  - Auth 登入/註冊
-  - Dashboard 訂閱 `readings` INSERT 事件即時更新，超標時震動與通知
-  - History 以 Swift Charts 繪製最近資料折線
+本檔案提供 AI Coding Agent 在本倉庫執行工作的快速入口，並反映目前的開發狀態。
 
-## 快速起手指令（可直接貼給 Agent）
-- Supabase SQL（依 PRD 使用 `float4` 型別）：
-  > "I am building an IoT project with Supabase. Please generate the SQL to create a table named `readings` with columns: id (int8, PK), created_at (timestamptz), device_id (text), temperature (float4), humidity (float4). Also, provide the SQL to enable RLS and allow public inserts but only authenticated selects."
-- ESP32 範本（示範 device_id 採用 PRD 的 `tea_room_01`）：
-  > "Write an Arduino sketch for ESP32 with DHT11 connected to GPIO 32. It needs to connect to WiFi, read sensor data every 10 seconds, and POST a JSON payload `{'device_id': 'tea_room_01', 'temperature': ..., 'humidity': ...}` to a Supabase REST API endpoint. Use `HTTPClient` and `ArduinoJson`. Handle WiFi reconnection."
-- iOS ViewModel：
-  > "Create a SwiftUI ViewModel named `SensorViewModel` using the `supabase-swift` SDK. It should have a published property `currentReading`. It needs a function to subscribe to Realtime INSERT events on the `readings` table and update `currentReading` automatically. Also, include a function to fetch the last 100 rows for a history chart."
-- 註：原始 `stage_1_prompt.md` 將溫濕度欄位標示為 `float`，此處已改為 PRD 規範的 `float4`。
+## 關鍵文檔 (Stage 2)
 
-## Monorepo 架構
-- `supabase/`：SQL、migration、設定
-- `esp32/`：Arduino 韌體（目前草稿：`arduino_draft.ino`）
-- `ios/`：SwiftUI App 程式碼
+- [iOS 設計規格書](ios/Doc/stage-2-view/STAGE_2_IOS_DashboardView.md)：Neo-Bento 風格指引與組件規格。
+- [設計提案：異常警報卡片](ios/Doc/stage-2-view/DESIGN_PROPOSALS_ALERT_CARD.md)：警報 UI 的視覺設計建議。
+
+## 歷史存檔
+
+- [stage-1.md](stage-1.md)：Stage 1 (MVP) 完整 PRD、設計與任務存檔。
+
+## Stage 2 核心目標
+
+- **UI/UX 重構**：採用 Neo-Bento 設計語音（高飽和度、飽滿圓角、非對稱網格）。
+- **Dashboard 強化**：Hero Card (大數值即時數據)、Status Card (系統狀態圖標)。
+- **視覺精品化**：移除冗餘註釋，提升代碼與文檔的一致性。
+
+## 快速起手指令
+
+- **Bento Card Modifier**:
+  > "Create a SwiftUI ViewModifier `BentoCardStyle` that applies a continuous corner radius of 24, 16px padding, and a subtle floating shadow. Ensure it supports both Light and Dark mode backgrounds."
+- **Hero Dashboard Card**:
+  > "Using the `SensorViewModel`, create a 'Hero Card' that displays the current temperature in a large monospaced black font on an Indigo background, with a live breathing dot in the corner."
+
+---
+
+## 檔案架構
+
+- `ios/`：SwiftUI App 重構主場。
+- `supabase/`：後端資料表與 RLS 設定（Stage 1 已完成）。
+- `esp32/`：感測器韌體（Stage 1 已完成）。
