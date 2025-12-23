@@ -1,37 +1,35 @@
-# ESP32 (Arduino) - Stage 2
+# ESP32 韌體概觀 (Stage 2)
 
-這是支援 ESP32 資料上傳至 Supabase 的 Stage 2 韌體工作區。本階段重點在於 **部署彈性 (WiFiManager)** 與 **功耗優化 (Deep Sleep)**。
+本目錄包含 Pu'er Sense 專案的 ESP32 韌體程式碼。目前已進入 **Stage 2 (Enhanced Reliability)**。
 
-## 文件指南
+## 📍 核心索引 (Index)
 
-- **開發總綱**: `AGENTS.md` (Stage 1 基礎規則)。
-- **Stage 1 工具盒**: `stage-1_esp32.md`（基礎感測與上傳邏輯）。
-- **Stage 2 進階指引**: `stage-2_esp32.md` (**當前核心目標**：WiFiManager, Deep Sleep, 模組化)。
+- **開發日誌**: [`AGENTS.md`](file:///Users/joseph-m2/Dev/1141-iOS-adv/1141-ios-proj/esp32/AGENTS.md)
+- **主程式碼**: [`arduino_stage2/arduino_stage2.ino`](file:///Users/joseph-m2/Dev/1141-iOS-adv/1141-ios-proj/esp32/arduino_stage2/arduino_stage2.ino)
+- **Stage 1 備份**: [`stage-1_esp32.md`](file:///Users/joseph-m2/Dev/1141-iOS-adv/1141-ios-proj/esp32/stage-1_esp32.md)
 
-## 核心設計說明
+## 🚀 Stage 2 核心功能
 
-### 1. WiFi 設定方案 (WiFiManager)
+### 1. 動態網路設定 (WiFiManager)
 
-本專案已移除硬編碼 WiFi 資訊，改用 **WiFiManager** 動態設定：
+已移除硬編碼的 WiFi 資訊。設備啟動後若無連網紀錄，將開啟 `ESP32-Setup` 熱點。用戶可透過手機連網並設定目標 WiFi。
 
-- **首次連線**: 搜尋並連線熱點 `ESP32-Setup`，於彈出的網頁設定 WiFi。
-- **重置設定**: 長按 **GPIO 4** 按鈕 3 秒，裝置將清除 WiFi 設定並重啟。
+### 2. 功耗管理 (Deep Sleep)
 
-### 2. 韌體結構 (Modular structure)
+為優化電池壽命，設備在資料上傳成功後會進入 **Deep Sleep** 5 分鐘。Demo 模式下可切換為連續讀取。
 
-程式碼已拆分為多檔案結構以利維護，燒錄時請確保包含 `arduino_stage2/` 下所有檔案：
+### 3. 模組化結構
 
-- `arduino_stage2.ino`: 主程式與任務調度。
-- `wifi_config.ino`: WiFi 管理與重置邏輯。
+程式碼按功能模組化（如 WiFi 管理、感測器讀取、API 傳輸），提升維護效率。
 
-### 3. 功耗優化 (Deep Sleep)
+## 🛠️ 快速起手步驟
 
-- **標準模式**: 資料上傳後進入 **Deep Sleep** 5 分鐘，以節省電力。
-- **Demo 模式**: 可切換為每 10 秒讀取一次的循環除錯模式。
+1. **環境準備**: 安裝 `WiFiManager` (tzapu), `ArduinoJson`, `DHTesp` 函式庫。
+2. **金鑰設定**: 將 `secrets.h.template` 複製並命名為 `secrets.h`，填入 Supabase URL/Key。
+3. **燒錄**: 使用 Arduino IDE 或 PlatformIO 燒錄 `arduino_stage2` 程式。
+4. **配網**: 連接 `ESP32-Setup` 熱點完成第一次連網設定。
 
-## 快速測試步驟
+---
 
-1. 安裝必要庫：`WiFiManager` (tzapu), `ArduinoJson`, `DHTesp`, `HTTPClient`。
-2. 將 `secrets.h.template` 複製到 `arduino_stage2/secrets.h`，填入 Supabase URL/Key 與 `DEVICE_ID`。
-3. 使用 Arduino IDE 開啟 `arduino_stage2/arduino_stage2.ino` 並燒錄。
-4. 依「WiFi 設定方案」完成網路設定，並透過序列埠監看上傳狀態。
+> [!CAUTION]
+> **安全提示**：請勿將包含真實 WiFi 或 API Key 的 `secrets.h` 提交至版本控制系統。

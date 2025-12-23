@@ -1,31 +1,36 @@
 /\*
 
-- File: README.md
+- File: supabase/README.md
 - Purpose: Supabase Backend Project Overview and Development Guide
 - Architecture: Supabase (PostgreSQL, RLS, REST API)
 - AI Context: Source of truth for database schema and integration endpoints.
   \*/
 
-# Supabase 專案概觀
+# Supabase 後端概觀
 
-**狀態：✅ Stage 1 已完成**
+本目錄包含 Pu'er Sense 專案的 Supabase 後端實作。目前已進入 **Stage 2 (Planning)**。
 
-本目錄包含 1141-iOS-proj 專案的 Supabase 後端實作資訊，主要負責 IoT 感測數據的存儲與角色導向的資料存取控制。
+## 🚀 核心索引 (Index)
 
-## 🚀 快速連結
+- **當前日誌**: [`AGENTS.md`](file:///Users/joseph-m2/Dev/1141-iOS-adv/1141-ios-proj/supabase/AGENTS.md)
+- **實作詳情**: [`STAGE_1.md`](file:///Users/joseph-m2/Dev/1141-iOS-adv/1141-ios-proj/supabase/STAGE_1.md) - Stage 1 備份。
+- **SQL 遷移**: [`001_create_readings_table.sql`](file:///Users/joseph-m2/Dev/1141-iOS-adv/1141-ios-proj/supabase/001_create_readings_table.sql)
 
-- **[Stage 1 實作詳情](STAGE_1.md)** - 資料表結構、RLS 策略與 PRD 摘要
-- **[實作與測試指南](SETUP_GUIDE.md)** - 詳細的開發環境設置與驗證步驟
-- **[SQL 遷移檔案](001_create_readings_table.sql)** - 用於重建資料庫結構的 SQL 指令
+## 🏗️ 模組狀態 (Status)
 
-## 🛠 關鍵組件
+### ✅ Stage 1 (Done)
 
-- **資料表**: `readings` (存儲溫度、濕度與裝置 ID)
-- **安全**: 啟用 RLS (Row Level Security)，區分 `anon` (寫入) 與 `authenticated` (讀取)
-- **自動化**: 提供 `test_supabase_stage1.sh` 進行端到端 REST API 驗證
+- **readings 資料表**: 存儲設備數據 (`device_id`, `temperature`, `humidity`).
+- **RLS 策略**: 已配置 `anon` 寫入與 `authenticated` 讀取權限。
+- **測試工具**: `test_supabase_stage1.sh` 端到端驗證腳本。
 
-## 📖 開發原則
+### 🚧 Stage 2 (Planning)
 
-1. **冪等性 (Idempotency)**: 所有 SQL 遷移檔案必須支持重複執行而不報錯。
-2. **最小權限 (Principle of Least Privilege)**: 強制執行 RLS，不論透過何種介面存取。
-3. **文件同步**: 任何 Schema 變動必須同時更新 `AGENTS.md` 與對應的階段文件。
+- **聚合查詢**: 規劃 Hourly/Daily 統計 API。
+- **Edge Functions**: 用於異常數據推送通知與警報邏輯。
+- **數據完整性**: 強化批次寫入的驗證邏輯。
+
+---
+
+> [!IMPORTANT]
+> **維護要求**：Schema 或 RLS 的任何變動必須同步更新至 `AGENTS.md` 並維持遷移檔案的冪等性。

@@ -1,9 +1,9 @@
 /\*
 
-- File: AGENTS.md
-- Purpose: Project Runtime Status and AI Collaboration Protocol
-- Architecture: Documentation-driven Development (PDCA)
-- AI Context: Primary synchronization point for AI Agents. Tracks "Long-term Memory".
+- File: supabase/AGENTS.md
+- Purpose: Supabase Sub-project Runtime Status and AI Collaboration Protocol
+- Architecture: Postgres, RLS, Edge Functions
+- AI Context: Backend synchronization and data integrity constraints.
   \*/
 
 # Supabase 開發日誌 (AGENTS.md)

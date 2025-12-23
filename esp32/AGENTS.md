@@ -1,20 +1,48 @@
-# ESP32 Agent 指南（Stage 1）
+/\*
 
-本指引協助 AI Agent 以最小改動完成 ESP32 韌體的 stage-1 開發，需與根目錄 `AGENTS.md` 與 `PRD_STAGE1.md` 保持一致（摘要見 `PRD_ESP32_STAGE_1.md`），任一文件更新時請同步檢查本檔與 `TASKS_ESP32_STAGE_1.md`。
+- File: esp32/AGENTS.md
+- Purpose: ESP32 Firmware Runtime Status and AI Collaboration Protocol
+- Architecture: Arduino/C++, ESP32, DHT11, Supabase REST
+- AI Context: Firmware-specific constraints and sensor data integrity.
+  \*/
 
-## 任務目標
-- 以 ESP32 + DHT11（GPIO 32）讀取溫溼度，並透過 Supabase REST API 上傳。
-- 標準週期每 5 分鐘讀取；Demo 模式 10 秒。若讀取為 NaN 則跳過上傳。
-- 送出 JSON：`{"device_id":<string>,"temperature":<float>,"humidity":<float>}`，`device_id` 以可設定常數（範例值 `tea_room_01`）提供；HTTP Header 包含 `apikey` 與 `Authorization: Bearer <anon key>`。
+# ESP32 開發指引 (Stage 2)
 
-## 開發守則
-- 連網：開機連指定 Wi-Fi，偵測斷線需自動重連並寫入日誌。
-- 感測：使用 `DHTesp` 或等效函式庫，初始化於 `setup()`，錯誤時提供清楚的序列埠輸出。
-- 傳輸：使用 `HTTPClient` + `ArduinoJson`，設定 `Content-Type: application/json` 與 `Prefer: return=minimal`。
-- 安全：不要提交實際的 Wi-Fi / Supabase 金鑰；以占位符或 `secrets.h` (未版本控制) 注入。
-- TLS：優先使用 `SUPABASE_ROOT_CA` 憑證；若需快速測試可將 `ALLOW_INSECURE_TLS=true`，並在日誌中提示為不驗證憑證模式。
+本檔案紀錄 ESP32 韌體的開發狀態與自動化指令。請嚴格遵守 [GEMINI.md](file:///Users/joseph-m2/Dev/1141-iOS-adv/1141-ios-proj/GEMINI.md) 協議。
 
-## 交付物
-- 單一草稿/主要 Sketch（`arduino_draft.ino` 或後續正式檔），可切換標準/ Demo 週期。
-- 簡短測試說明：如何於序列埠檢視連線、NaN 跳過、POST 成功回應狀態。
-- 若需要額外檔案，保持命名簡潔並在 README 標註入口。
+## 🎯 當前進度 (Done)
+
+- ✅ **Stage 1: MVP Firmware Implementation**
+  - 使用 ESP32 + DHT11 讀取溫濕度。
+  - 實作 Supabase REST API 上傳邏輯 (JSON format)。
+  - 支援 `DEMO_MODE` 切換上傳週期 (5 mins / 10 secs)。
+  - Wi-Fi 自動重連與 HTTP 基本錯誤處理。
+
+## 📝 關鍵開發決策 (History)
+
+- **2025-12-23**: 確認 Stage 1 基礎韌體已穩定，可由 REST API 成功將數據推送至 `readings` 資料表。
+- **2025-12-23**: `arduino_stage2.ino` 已根據開發需求將 `DEMO_MODE` 預設設為 `true`。
+
+## 🚧 下一步 (Next Steps)
+
+- [ ] **Stage 2: Advanced Reliability**
+  - 實作 OTA (Over-the-Air) 更新支援。
+  - 優化 TLS 憑證管理，從 `secrets.h` 動態注入。
+  - 導入 Deep Sleep 模式以優化功耗（視硬體供電情況）。
+- [ ] **Local Logging**: 導入更完善的 Serial Debugging 協定，方便 AI 診斷連線問題。
+
+---
+
+## 快速起手指令 (Prompt Samples)
+
+- **Sensor Handler**:
+  > "Modify the DHT11 reading logic to include a simple moving average filter (3 samples) to reduce sensor noise before uploading to Supabase."
+- **HTTP Error Debugger**:
+  > "Analyze the HTTP POST logic and add specific handling for Supabase 401 (Unauthorized) errors, including a Serial print of the expected API Key format for verification."
+
+---
+
+## 📂 檔案架構
+
+- `arduino_stage2.ino`: 主韌體代碼。
+- `secrets.h`: 金鑰與連線資訊 (未版本控制)。

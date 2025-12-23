@@ -1,31 +1,33 @@
 /\*
 
 - File: AGENTS.md
-- Purpose: AI Coding Agent 工作指南 (階段二)
-- Architecture: Monorepo Indexing
-- AI Context: Stage 2 focuses on Neon-Bento UI and Advanced Features.
+- Purpose: Project Runtime Status and AI Collaboration Protocol (Stage 2)
+- Architecture: Documentation-driven Development (PDCA)
+- AI Context: Primary synchronization point for AI Agents. Tracks "Long-term Memory".
   \*/
 
-# AI Coding Agent 指南 (階段二)
+# AI Coding Agent 工作指南 (AGENTS.md)
 
-本檔案提供 AI Coding Agent 在本倉庫執行工作的快速入口，並反映目前的開發狀態。
+本檔案為 AI Agent 的核心工作區，記錄目前的開發狀態、關鍵決策與自動化指令。請嚴格遵守 [GEMINI.md](file:///Users/joseph-m2/Dev/1141-iOS-adv/1141-ios-proj/GEMINI.md) 協議。
 
-## 關鍵文檔 (Stage 2)
+## 🎯 當前進度 (Done)
 
-- [iOS 設計規格書](ios/Doc/stage-2-view/STAGE_2_IOS_DashboardView.md)：Neo-Bento 風格指引與組件規格。
-- [設計提案：異常警報卡片](ios/Doc/stage-2-view/DESIGN_PROPOSALS_ALERT_CARD.md)：警報 UI 的視覺設計建議。
+- ✅ **Documentation Protocol**: 建立 `GEMINI.md` 並實作 AI 最佳化工作流 (`/update-readme`, `/update-agents`)。
+- ✅ **Stage 2 Alignment**: 更新 `README.md` 以符合 Stage 2 (Neo-Bento UI) 索引與 Human-AI Balance 原則。
+- ✅ **Stage 1 Archiving**: 所有的 MVP 相關文檔已封存至 `stage-1.md`。
 
-## 歷史存檔
+## 🚧 下一步 (Next Steps)
 
-- [stage-1.md](stage-1.md)：Stage 1 (MVP) 完整 PRD、設計與任務存檔。
+- [ ] **Neo-Bento UI Implementation**: 依照 [iOS 設計規格書](file:///Users/joseph-m2/Dev/1141-iOS-adv/1141-ios-proj/ios/Doc/stage-2-view/STAGE_2_IOS_DashboardView.md) 開始重構 Dashboard。
+- [ ] **Alert Card Design**: 實作[設計提案](file:///Users/joseph-m2/Dev/1141-iOS-adv/1141-ios-proj/ios/Doc/stage-2-view/DESIGN_PROPOSALS_ALERT_CARD.md)中的異常警報卡片。
 
-## Stage 2 核心目標
+## 📝 任務開發筆記
 
-- **UI/UX 重構**：採用 Neo-Bento 設計語音（高飽和度、飽滿圓角、非對稱網格）。
-- **Dashboard 強化**：Hero Card (大數值即時數據)、Status Card (系統狀態圖標)。
-- **視覺精品化**：移除冗餘註釋，提升代碼與文檔的一致性。
+- **2025-12-23**: 導入 AI-Optimized Workflows。現在 AI Agent 可以透過 `.agent/workflows/` 中的標準流程來維護專案文檔。
+- **2025-12-23**: 重構 `README.md`，導入 Monorepo 映射表與對 AI 友善的 Context 索引，確保跨模組開發的一致性。
+- **2025-12-23**: 核心文檔對齊 `GEMINI.md` 規範，移除冗餘註釋，強化「代碼即文檔」的高訊息雜訊比。
 
-## 快速起手指令
+## 快速起手指令 (Prompt Samples)
 
 - **Bento Card Modifier**:
   > "Create a SwiftUI ViewModifier `BentoCardStyle` that applies a continuous corner radius of 24, 16px padding, and a subtle floating shadow. Ensure it supports both Light and Dark mode backgrounds."
@@ -34,8 +36,9 @@
 
 ---
 
-## 檔案架構
+## 📂 檔案架構速覽
 
 - `ios/`：SwiftUI App 重構主場。
 - `supabase/`：後端資料表與 RLS 設定（Stage 1 已完成）。
 - `esp32/`：感測器韌體（Stage 1 已完成）。
+- `.agent/workflows/`：專案專屬 AI 工作流。
