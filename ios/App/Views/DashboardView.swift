@@ -98,7 +98,7 @@
         // Depot Switcher (Capsule)
         Button(action: {}) {
           HStack(spacing: 6) {
-            Text("Menghai Depot")
+            Text("勐海 Depot")
               .font(.subheadline.bold())
             Image(systemName: "chevron.down")
               .font(.caption.bold())
@@ -168,7 +168,7 @@
             let deviceInfo = viewModel.devices.first(where: { $0.id == deviceId })
             UnifiedClimateCard(
               deviceId: deviceId,
-              location: deviceInfo?.location ?? "Unknown",
+              location: deviceInfo?.location ?? "生茶倉",
               status: deviceInfo?.status ?? .offline,
               battery: deviceInfo?.battery ?? 0,
               readings: groupedHistory[deviceId] ?? []
