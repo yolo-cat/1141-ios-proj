@@ -9,12 +9,14 @@
   import SwiftUI
   import Charts
   import Observation
+  import Supabase
 
   // MARK: - Dashboard View
 
   struct DashboardView: View {
     @Bindable var viewModel: DashboardViewModel
     @State private var activeTab = 0
+    @State private var showProfileSheet = false
 
     // Grouped history by device ID
     private var groupedHistory: [String: [Reading]] {
@@ -59,6 +61,10 @@
       .onAppear {
         viewModel.startListening()
         viewModel.fetchDefaultHistory()
+        viewModel.fetchUserProfile()
+      }
+      .sheet(isPresented: $showProfileSheet) {
+        ProfileView(viewModel: ProfileViewModel())
       }
     }
 
@@ -90,15 +96,23 @@
         }
 
         // User Avatar
-        Circle()
-          .fill(DesignSystem.Colors.cardStandard)
-          .frame(width: 44, height: 44)
-          .overlay(
-            Image(systemName: "person.crop.circle.fill")
-              .font(.title2)
-              .foregroundColor(DesignSystem.Colors.textSecondary)
-          )
-          .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
+        Button(action: { showProfileSheet = true }) {
+          Circle()
+            .fill(
+              LinearGradient(
+                colors: [DesignSystem.Colors.primary, DesignSystem.Colors.primary.opacity(0.7)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+              )
+            )
+            .frame(width: 44, height: 44)
+            .overlay(
+              Text(String(viewModel.userEmail?.prefix(1).uppercased() ?? "?"))
+                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .foregroundColor(.white)
+            )
+            .shadow(color: DesignSystem.Colors.primary.opacity(0.3), radius: 5, x: 0, y: 2)
+        }
       }
     }
 
@@ -458,5 +472,10 @@
     }
     func subscribeToReadings(onInsert: @escaping (Reading) -> Void) {}
     func unsubscribeFromReadings() {}
+    func signInWithOAuth(provider: Auth.Provider, redirectTo: String?) async throws {}
+    func handle(_ url: URL) async throws {}
+    func linkIdentity(provider: Auth.Provider) async throws {}
+    func userIdentities() async throws -> [UserIdentity] { return [] }
+    func currentUserEmail() async throws -> String? { return "mock@example.com" }
   }
 #endif

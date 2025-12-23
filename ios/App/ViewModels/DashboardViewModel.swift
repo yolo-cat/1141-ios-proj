@@ -45,6 +45,7 @@
     var lastAlertAt: Date?
     var alertType: AlertType = .normal
     var devices: [DeviceInfo] = []
+    var userEmail: String?
 
     var temperatureThreshold: Float
     var humidityThreshold: Float
@@ -104,6 +105,18 @@
 
     func fetchDefaultHistory() {
       fetchHistory(limit: StageConfig.historyLimit)
+    }
+
+    func fetchUserProfile() {
+      Task { [weak self] in
+        guard let self else { return }
+        do {
+          let email = try await manager.currentUserEmail()
+          await MainActor.run { self.userEmail = email }
+        } catch {
+          print("❌ [DashboardViewModel] fetchUserProfile error: \(error)")
+        }
+      }
     }
 
     func fetchHistory(limit: Int) {

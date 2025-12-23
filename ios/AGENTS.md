@@ -50,6 +50,28 @@ TeaWarehouse-MVP iOS 端已完成 Stage 1 基礎建設，並已進入 **Stage 2*
   - **Shared Design System**: 建立 `App/Design/DesignSystem.swift` 集中管理 Colors (Indigo/Yellow/Red) 與 Typography (Hero Number, Grid Header)。
   - **Dashboard Refactor**: 重構為 Hero Card (即時數據) + Status Card (3D Icon) + Context Card (Outline Style) 的模組化多欄網格。
   - **LoginView Redesign**: 移除茶餅插畫，轉為現代化的高張力排版 (Centered "PU'ER" Hero Text) 與高觸感輸入框 (Neo-Bento Input)。
+- **2025-12-23**: **Google OAuth Integration**:
+  - `SupabaseManager`: 新增 `signInWithOAuth` 與 `handle(url)` 支援深度連結回調。
+  - `AuthViewModel`: 實作 `signInWithGoogle` 邏輯。
+  - `LoginView`: 新增 "Continue with Google" 按鈕 (Neo-Bento Style)。
+  - `TeaWarehouseApp`: 註冊 `.onOpenURL` 以處理 OAuth Callback。
+- **2025-12-23**: **ProfileView 實作 (Identity Linking)**:
+  - `SupabaseManager`: 新增 `linkIdentity`, `userIdentities`, `currentUserEmail` 支援身份連結。
+  - `ProfileViewModel`: 管理用戶資料與 Identity 連結狀態。
+  - `ProfileView`: Neo-Bento 風格的用戶個人頁面，顯示 Email、已連結帳號，及「連結 Google」按鈕。
+  - `DashboardView`: 新增從 User Avatar 導航至 ProfileView 的功能。
+- **2025-12-23**: **Refine ProfileView Color System**:
+  - `ProfileView`: Replaced hardcoded colors with `DesignSystem` tokens (Danger/AccentA/TextSecondary) to ensure theme consistency.
+  - Standardized "Link Google" button gradient and secondary text styling.
+- **2025-12-23**: **Standardize Button Styling**:
+  - `DesignSystem`: Promoted `ScaleButtonStyle` to shared Design System.
+  - `ProfileView`: Updated "Link Google" button to match `LoginView` aesthetics (Card Surface + Outline + Shadow).
+  - `LoginView`: Removed local `ScaleButtonStyle` to use shared definition.
+- **2025-12-23**: **Refine ProfileView Colors**:
+  - `ProfileView`: Changed Google icon color and "已連結" (Linked) status badge color from `Danger`/`AccentB` to `Primary` (Indigo), ensuring consistent use of the app's theme color.
+- **2025-12-23**: **Sync User Avatar to Dashboard**:
+  - `DashboardViewModel`: Added `fetchUserProfile` to retrieve user email.
+  - `DashboardView`: Updated header avatar to match `ProfileView` style (Initial + Themed Gradient), creating a unified identity across views.
 
 ## 依據
 

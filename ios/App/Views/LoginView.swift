@@ -122,6 +122,41 @@
             .buttonStyle(ScaleButtonStyle())
             .disabled(authViewModel.isLoading)
 
+            // Divider
+            HStack {
+              Rectangle().fill(DesignSystem.Colors.textSecondary).frame(height: 1).opacity(0.1)
+              Text("OR").font(.caption2).fontWeight(.bold).foregroundColor(
+                DesignSystem.Colors.textSecondary)
+              Rectangle().fill(DesignSystem.Colors.textSecondary).frame(height: 1).opacity(0.1)
+            }
+            .padding(.vertical, 4)
+
+            // Google Button
+            Button(action: { authViewModel.signInWithGoogle() }) {
+              HStack {
+                // Using a symbol as a placeholder for Google Logo
+                Image(systemName: "globe")
+                  .symbolRenderingMode(.hierarchical)
+                  .foregroundColor(DesignSystem.Colors.primary)
+                Text("Continue with Google")
+                  .fontWeight(.bold)
+                  .foregroundColor(DesignSystem.Colors.textSecondary)
+              }
+              .frame(maxWidth: .infinity)
+              .frame(height: DesignSystem.Layout.inputHeight)
+              .background(DesignSystem.Colors.cardStandard)
+              .clipShape(
+                RoundedRectangle(cornerRadius: DesignSystem.Layout.cornerRadius, style: .continuous)
+              )
+              .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
+              .overlay(
+                RoundedRectangle(cornerRadius: DesignSystem.Layout.cornerRadius)
+                  .stroke(DesignSystem.Colors.textSecondary.opacity(0.1), lineWidth: 1)
+              )
+            }
+            .buttonStyle(ScaleButtonStyle())
+            .disabled(authViewModel.isLoading)
+
             // Toggle Mode
             Button(action: {
               withAnimation(.spring()) {
@@ -211,15 +246,6 @@
         RoundedRectangle(cornerRadius: DesignSystem.Layout.cornerRadius)
           .stroke(DesignSystem.Colors.textSecondary.opacity(0.1), lineWidth: 1)
       )
-    }
-  }
-
-  struct ScaleButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-      configuration.label
-        .scaleEffect(configuration.isPressed ? 0.96 : 1.0)
-        .opacity(configuration.isPressed ? 0.9 : 1.0)
-        .animation(.easeOut(duration: 0.1), value: configuration.isPressed)
     }
   }
 

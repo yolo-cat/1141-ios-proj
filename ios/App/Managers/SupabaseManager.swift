@@ -25,10 +25,18 @@
 
     func subscribeToReadings(onInsert: @escaping (Reading) -> Void)
     func unsubscribeFromReadings()
+    func signInWithOAuth(provider: Auth.Provider, redirectTo: String?) async throws
+    func handle(_ url: URL) async throws
+
+    // Identity Linking
+    func linkIdentity(provider: Auth.Provider) async throws
+    func userIdentities() async throws -> [UserIdentity]
+    func currentUserEmail() async throws -> String?
   }
 
   final class SupabaseManager: SupabaseManaging {
     static let shared = SupabaseManager()
+    static let defaultRedirectURL = "ZZT.ios://auth/callback"
 
     private(set) var sessionToken: String?
     private let supabase: SupabaseClient
@@ -81,6 +89,25 @@
 
     init() {
       self.supabase = SupabaseManager.makeClient()
+
+      // Listen to Auth State Changes
+      self.realtimeTask = Task { [weak self] in
+        guard let self else { return }
+        for await state in self.supabase.auth.authStateChanges {
+
+          switch state.event {
+          case .initialSession, .signedIn, .tokenRefreshed:
+            if let accessToken = state.session?.accessToken {
+              print("🔄 [SupabaseManager] Auth State Change: \(state.event). Updating token.")
+              await MainActor.run { self.sessionToken = accessToken }
+            }
+          case .signedOut:
+            print("🔄 [SupabaseManager] Auth State Change: SignedOut. Clearing token.")
+            await MainActor.run { self.sessionToken = nil }
+          default: break
+          }
+        }
+      }
     }
 
     // MARK: - Async APIs
@@ -92,6 +119,57 @@
 
     func signUp(email: String, password: String) async throws {
       _ = try await supabase.auth.signUp(email: email, password: password)
+    }
+
+    func signInWithOAuth(provider: Auth.Provider, redirectTo: String?) async throws {
+      print(
+        "🚀 [SupabaseManager] signInWithOAuth called. Provider: \(provider), RedirectTo: \(redirectTo ?? "nil")"
+      )
+      let url = redirectTo.flatMap { URL(string: $0) }
+      try await supabase.auth.signInWithOAuth(provider: provider, redirectTo: url)
+      print("✅ [SupabaseManager] signInWithOAuth executed/returned.")
+
+      // If ASWebAuthenticationSession handled the flow, session might already be set.
+      if let session = try? await supabase.auth.session {
+        print(
+          "✅ [SupabaseManager] Session found after signInWithOAuth. Token length: \(session.accessToken.count)"
+        )
+        sessionToken = session.accessToken
+      } else {
+        print(
+          "ℹ️ [SupabaseManager] No session immediately after signInWithOAuth. Waiting for handle(url) if using custom scheme."
+        )
+      }
+    }
+
+    func handle(_ url: URL) async throws {
+      print("🔗 [SupabaseManager] handle(url) called with: \(url.absoluteString)")
+      try await supabase.handle(url)
+
+      // Update local session token after successful handling
+      if let session = try? await supabase.auth.session {
+        print(
+          "✅ [SupabaseManager] Session retrieved successfully after handle(url). Token length: \(session.accessToken.count)"
+        )
+        sessionToken = session.accessToken
+      } else {
+        print("⚠️ [SupabaseManager] No session found after handle(url).")
+      }
+    }
+
+    // MARK: - Identity Linking
+
+    func linkIdentity(provider: Auth.Provider) async throws {
+      try await supabase.auth.linkIdentity(provider: provider)
+    }
+
+    func userIdentities() async throws -> [UserIdentity] {
+      return try await supabase.auth.userIdentities()
+    }
+
+    func currentUserEmail() async throws -> String? {
+      let user = try await supabase.auth.user()
+      return user.email
     }
 
     func fetchHistory(limit: Int) async throws -> [Reading] {
@@ -208,7 +286,19 @@
       guard let host = url.host, !host.isEmpty else {
         fatalError("Invalid SUPABASE_URL: host is missing or empty")
       }
-      return SupabaseClient(supabaseURL: url, supabaseKey: key)
+
+      // Define a custom URL scheme for OAuth callbacks
+      // This should match the URL scheme configured in Info.plist (CFBundleURLSchemes)
+      // Format: BundleID://auth/callback
+      let redirectURL = URL(string: SupabaseManager.defaultRedirectURL)
+
+      return SupabaseClient(
+        supabaseURL: url,
+        supabaseKey: key,
+        options: .init(
+          auth: .init(redirectToURL: redirectURL)
+        )
+      )
     }
   }
 #endif

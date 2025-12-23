@@ -7,6 +7,7 @@
 #if canImport(Foundation)
   import Foundation
   import Observation
+  import Supabase
 
   @MainActor
   @Observable
@@ -62,6 +63,68 @@
           await MainActor.run {
             self.isLoading = false
             self.errorMessage = error.localizedDescription
+          }
+        }
+      }
+    }
+
+    func signInWithGoogle() {
+      print("👤 [AuthViewModel] signInWithGoogle triggered.")
+      errorMessage = nil
+      statusMessage = nil
+      isLoading = true
+      Task { [weak self] in
+        guard let self else { return }
+        do {
+          print("👤 [AuthViewModel] calling manager.signInWithOAuth(.google)")
+          try await self.manager.signInWithOAuth(
+            provider: .google,
+            redirectTo: SupabaseManager.defaultRedirectURL
+          )
+          print("👤 [AuthViewModel] manager.signInWithOAuth returned. Polling for session...")
+
+          // Polling for session token update from SupabaseManager listener
+          var attempts = 0
+          while self.manager.sessionToken == nil && attempts < 10 {
+            print("👤 [AuthViewModel] Waiting for session... attempt \(attempts + 1)")
+            try? await Task.sleep(nanoseconds: 500_000_000)  // 0.5s
+            attempts += 1
+          }
+
+          if let token = self.manager.sessionToken {
+            print("👤 [AuthViewModel] Session confirmed!")
+            self.sessionToken = token
+            self.isLoading = false
+          } else {
+            print("👤 [AuthViewModel] Timed out waiting for session.")
+            self.isLoading = false
+            self.errorMessage = "Login timed out or failed."
+          }
+        } catch {
+          print("❌ [AuthViewModel] signInWithGoogle failed: \(error.localizedDescription)")
+          self.isLoading = false
+          self.errorMessage = error.localizedDescription
+        }
+      }
+    }
+
+    func handle(url: URL) {
+      print("👤 [AuthViewModel] handle(url) called: \(url.absoluteString)")
+      Task { [weak self] in
+        guard let self else { return }
+        do {
+          try await self.manager.handle(url)
+          await MainActor.run {
+            print("👤 [AuthViewModel] manager.handle(url) succeeeded.")
+            self.sessionToken = self.manager.sessionToken
+            self.isLoading = false
+          }
+        } catch {
+          await MainActor.run {
+            print("❌ [AuthViewModel] handle(url) failed: \(error.localizedDescription)")
+            // If error is "Example: user cancelled", we should stop loading
+            self.isLoading = false
+            self.errorMessage = "Login callback failed: \(error.localizedDescription)"
           }
         }
       }

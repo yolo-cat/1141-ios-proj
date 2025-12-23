@@ -23,6 +23,9 @@
           }
         }
         .environment(authViewModel)
+        .onOpenURL { url in
+          authViewModel.handle(url: url)
+        }
       }
     }
   }

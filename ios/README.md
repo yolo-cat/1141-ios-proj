@@ -23,6 +23,7 @@ TeaWarehouse-MVP 的 iOS 端以 SwiftUI + MVVM 開發，串接 Supabase Realtime
 2. 實施本地數據持久化與緩存
 3. 優化 UI 動態效果與自定義視圖
 4. 增強通知系統與閾值管理
+5. **Google OAuth 整合**：支援原生 Google 登入 (Web Flow)。
 
 ---
 
