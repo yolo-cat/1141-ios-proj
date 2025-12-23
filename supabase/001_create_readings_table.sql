@@ -52,3 +52,6 @@ CREATE INDEX IF NOT EXISTS idx_readings_created_at ON public.readings(created_at
 -- Create index on device_id for filtering by device
 CREATE INDEX IF NOT EXISTS idx_readings_device_id ON public.readings(device_id);
 
+-- Enable Realtime for this table
+ALTER PUBLICATION supabase_realtime ADD TABLE readings;
+

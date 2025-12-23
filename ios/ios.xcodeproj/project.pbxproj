@@ -21,7 +21,34 @@
 		C79AF7B12EEED90D008088F6 /* UIKitNavigation in Frameworks */ = {isa = PBXBuildFile; productRef = C79AF7B02EEED90D008088F6 /* UIKitNavigation */; };
 		C79AF7B42EEED91C008088F6 /* CasePaths in Frameworks */ = {isa = PBXBuildFile; productRef = C79AF7B32EEED91C008088F6 /* CasePaths */; };
 		C79AF7B62EEED91C008088F6 /* CasePathsCore in Frameworks */ = {isa = PBXBuildFile; productRef = C79AF7B52EEED91C008088F6 /* CasePathsCore */; };
+		C7EC53892EFA57EF00DE1210 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C7EC53882EFA57EF00DE1210 /* WidgetKit.framework */; };
+		C7EC538B2EFA57EF00DE1210 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C7EC538A2EFA57EF00DE1210 /* SwiftUI.framework */; };
+		C7EC539C2EFA57F100DE1210 /* com.puer.senseExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = C7EC53862EFA57EF00DE1210 /* com.puer.senseExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		C7EC539A2EFA57F100DE1210 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C79AF7262EEDD802008088F6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C7EC53852EFA57EF00DE1210;
+			remoteInfo = com.puer.senseExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		C7EC53A12EFA57F100DE1210 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				C7EC539C2EFA57F100DE1210 /* com.puer.senseExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		C78F17432EEF23BC00ED9CA1 /* ios-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "ios-Info.plist"; sourceTree = "<group>"; };
@@ -29,12 +56,33 @@
 		C78F17BC2EF0517200ED9CA1 /* ios.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ios.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C79AF7902EEDD995008088F6 /* AGENTS.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = AGENTS.md; sourceTree = "<group>"; };
 		C79AF7932EEDD995008088F6 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		C7EC53862EFA57EF00DE1210 /* com.puer.senseExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = com.puer.senseExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		C7EC53882EFA57EF00DE1210 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		C7EC538A2EFA57EF00DE1210 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		C7EC539D2EFA57F100DE1210 /* Exceptions for "com.puer.sense" folder in "com.puer.senseExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = C7EC53852EFA57EF00DE1210 /* com.puer.senseExtension */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		C79AF7302EEDD802008088F6 /* app */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = app;
+			sourceTree = "<group>";
+		};
+		C7EC538C2EFA57EF00DE1210 /* com.puer.sense */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				C7EC539D2EFA57F100DE1210 /* Exceptions for "com.puer.sense" folder in "com.puer.senseExtension" target */,
+			);
+			path = com.puer.sense;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -59,6 +107,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C7EC53832EFA57EF00DE1210 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C7EC538B2EFA57EF00DE1210 /* SwiftUI.framework in Frameworks */,
+				C7EC53892EFA57EF00DE1210 /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -71,7 +128,19 @@
 				C79AF7932EEDD995008088F6 /* README.md */,
 				C78F17692EEF2EDB00ED9CA1 /* Supabase.xcconfig */,
 				C78F17BC2EF0517200ED9CA1 /* ios.app */,
+				C7EC53862EFA57EF00DE1210 /* com.puer.senseExtension.appex */,
+				C7EC538C2EFA57EF00DE1210 /* com.puer.sense */,
+				C7EC53872EFA57EF00DE1210 /* Frameworks */,
 			);
+			sourceTree = "<group>";
+		};
+		C7EC53872EFA57EF00DE1210 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				C7EC53882EFA57EF00DE1210 /* WidgetKit.framework */,
+				C7EC538A2EFA57EF00DE1210 /* SwiftUI.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -84,10 +153,12 @@
 				C79AF72A2EEDD802008088F6 /* Sources */,
 				C79AF72B2EEDD802008088F6 /* Frameworks */,
 				C79AF72C2EEDD802008088F6 /* Resources */,
+				C7EC53A12EFA57F100DE1210 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				C7EC539B2EFA57F100DE1210 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				C79AF7302EEDD802008088F6 /* app */,
@@ -111,6 +182,28 @@
 			productReference = C78F17BC2EF0517200ED9CA1 /* ios.app */;
 			productType = "com.apple.product-type.application";
 		};
+		C7EC53852EFA57EF00DE1210 /* com.puer.senseExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C7EC539E2EFA57F100DE1210 /* Build configuration list for PBXNativeTarget "com.puer.senseExtension" */;
+			buildPhases = (
+				C7EC53822EFA57EF00DE1210 /* Sources */,
+				C7EC53832EFA57EF00DE1210 /* Frameworks */,
+				C7EC53842EFA57EF00DE1210 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				C7EC538C2EFA57EF00DE1210 /* com.puer.sense */,
+			);
+			name = com.puer.senseExtension;
+			packageProductDependencies = (
+			);
+			productName = com.puer.senseExtension;
+			productReference = C7EC53862EFA57EF00DE1210 /* com.puer.senseExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -118,11 +211,14 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 2600;
+				LastSwiftUpdateCheck = 2620;
 				LastUpgradeCheck = 2620;
 				TargetAttributes = {
 					C79AF72D2EEDD802008088F6 = {
 						CreatedOnToolsVersion = 26.0;
+					};
+					C7EC53852EFA57EF00DE1210 = {
+						CreatedOnToolsVersion = 26.2;
 					};
 				};
 			};
@@ -147,6 +243,7 @@
 			projectRoot = "";
 			targets = (
 				C79AF72D2EEDD802008088F6 /* ios */,
+				C7EC53852EFA57EF00DE1210 /* com.puer.senseExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -161,6 +258,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C7EC53842EFA57EF00DE1210 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -171,7 +275,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C7EC53822EFA57EF00DE1210 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		C7EC539B2EFA57F100DE1210 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C7EC53852EFA57EF00DE1210 /* com.puer.senseExtension */;
+			targetProxy = C7EC539A2EFA57F100DE1210 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		C79AF7372EEDD803008088F6 /* Debug */ = {
@@ -377,6 +496,68 @@
 			};
 			name = Release;
 		};
+		C7EC539F2EFA57F100DE1210 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 74S8T9684C;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = com.puer.sense/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = com.puer.sense;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ZZT.ios.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		C7EC53A02EFA57F100DE1210 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 74S8T9684C;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = com.puer.sense/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = com.puer.sense;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ZZT.ios.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -394,6 +575,15 @@
 			buildConfigurations = (
 				C79AF73A2EEDD803008088F6 /* Debug */,
 				C79AF73B2EEDD803008088F6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C7EC539E2EFA57F100DE1210 /* Build configuration list for PBXNativeTarget "com.puer.senseExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C7EC539F2EFA57F100DE1210 /* Debug */,
+				C7EC53A02EFA57F100DE1210 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

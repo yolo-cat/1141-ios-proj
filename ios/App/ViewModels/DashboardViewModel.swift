@@ -127,12 +127,10 @@
           await MainActor.run {
             let sortedHistory = records.sorted { $0.createdAt < $1.createdAt }
             self.history = sortedHistory
-            // Initial data population if real-time hasn't triggered yet
-            if self.currentReading == nil {
-              self.currentReading = sortedHistory.last
-              if let last = sortedHistory.last {
-                self.checkAlert(for: last)
-              }
+            // 每次 fetch 都更新 currentReading 以同步 Hero/Context/Alert Card
+            if let latest = sortedHistory.last {
+              self.currentReading = latest
+              self.checkAlert(for: latest)
             }
           }
         } catch {
@@ -145,6 +143,12 @@
 
     private func handle(insert reading: Reading) {
       currentReading = reading
+      // 同步更新歷史列表
+      history.append(reading)
+      // 保持列表在限制數量內
+      if history.count > StageConfig.historyLimit {
+        history.removeFirst(history.count - StageConfig.historyLimit)
+      }
       checkAlert(for: reading)
     }
 

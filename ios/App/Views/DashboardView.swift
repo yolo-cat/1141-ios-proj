@@ -17,6 +17,8 @@
     @Bindable var viewModel: DashboardViewModel
     @State private var activeTab = 0
     @State private var showProfileSheet = false
+    @State private var showWarehouseSheet = false
+    @Environment(\.scenePhase) private var scenePhase
 
     // Grouped history by device ID
     private var groupedHistory: [String: [Reading]] {
@@ -66,6 +68,22 @@
       .sheet(isPresented: $showProfileSheet) {
         ProfileView(viewModel: ProfileViewModel())
       }
+      .sheet(isPresented: $showWarehouseSheet) {
+        WarehouseView()
+      }
+      .onChange(of: scenePhase) { _, newPhase in
+        switch newPhase {
+        case .active:
+          // App returned to foreground: reconnect and refresh data
+          viewModel.startListening()
+          viewModel.fetchDefaultHistory()
+        case .inactive, .background:
+          // App entering background: pause Realtime to save resources
+          viewModel.stopListening()
+        @unknown default:
+          break
+        }
+      }
     }
 
     // MARK: - Main Sections
@@ -76,13 +94,15 @@
           .font(DesignSystem.Typography.header)
           .foregroundColor(DesignSystem.Colors.textSecondary)
           .opacity(0.8)
+          .lineLimit(1)
+          .minimumScaleFactor(0.7)
 
         Spacer()
 
         // Depot Switcher (Capsule)
         Button(action: {}) {
           HStack(spacing: 6) {
-            Text("Menghai Depot")
+            Text("勐海 Depot")
               .font(.subheadline.bold())
             Image(systemName: "chevron.down")
               .font(.caption.bold())
@@ -152,7 +172,7 @@
             let deviceInfo = viewModel.devices.first(where: { $0.id == deviceId })
             UnifiedClimateCard(
               deviceId: deviceId,
-              location: deviceInfo?.location ?? "Unknown",
+              location: deviceInfo?.location ?? "生茶倉",
               status: deviceInfo?.status ?? .offline,
               battery: deviceInfo?.battery ?? 0,
               readings: groupedHistory[deviceId] ?? []
@@ -164,7 +184,7 @@
     }
 
     private var footerView: some View {
-      Button(action: {}) {
+      Button(action: { showWarehouseSheet = true }) {
         HStack {
           Image(systemName: "building.2.fill")
           Text("Manage Warehouse")

@@ -72,6 +72,16 @@ TeaWarehouse-MVP iOS 端已完成 Stage 1 基礎建設，並已進入 **Stage 2*
 - **2025-12-23**: **Sync User Avatar to Dashboard**:
   - `DashboardViewModel`: Added `fetchUserProfile` to retrieve user email.
   - `DashboardView`: Updated header avatar to match `ProfileView` style (Initial + Themed Gradient), creating a unified identity across views.
+- **2025-12-23**: **新增可組合 Widget 組件 (B/C/D)**:
+  - 新增 `App/Views/Widgets/` 資料夾，包含三個可組合的溫濕度 Widget：
+  - `ComparisonPill.swift`: 雙指標膠囊，並排顯示溫度 (Indigo) 與濕度 (Green)，支援標準/緊湊模式。
+  - `TrendSpark.swift`: 迷你走勢線 + 趨勢箭頭，使用 Swift Charts 繪製 Sparkline，自動計算趨勢 (Up/Down/Stable)。
+  - `LiveTicker.swift`: 滾動數字動畫，iOS 17+ 使用 `contentTransition(.numericText())` 並提供 iOS 16 降級方案。
+  - 所有組件嚴格遵循 `DesignSystem.swift` 配色規範。
+- **2025-12-23**: **修復與實作 Widget Extension (Home Screen)**:
+  - **Root Cause Fix**: 解決 `Failed to get descriptors` 錯誤。根本原因是 Widget 引用了主 App 的 `Color("Canvas")` 命名顏色，但該顏色不存在於 Widget 的 Asset Catalog 中，導致啟動時崩潰。
+  - **Solution**: 將 `Color("Canvas")` 替換為 `Color(uiColor: .systemGroupedBackground)`，使用系統顏色避免 Asset Catalog 依賴。
+  - **UI**: 實作 `com_puer_sense.swift`，支援 `systemSmall` / `systemMedium` 尺寸，整合 Indigo (溫度) 與 Green (濕度) 的品牌視覺。
 
 ## 依據
 
