@@ -1,11 +1,16 @@
-/// 2025-12-13: 將 historyLimit 調整為 288 並新增版本註釋。
+/*
+ * File: StageConfig.swift
+ * Purpose: Centralized configuration for sensor thresholds and application constants.
+ * Architecture: Static configuration enum.
+ * AI Context: Source of truth for alert logic. Do not modify values without PRD alignment.
+ */
 #if canImport(Foundation)
-import Foundation
+  import Foundation
 
-enum StageConfig {
+  enum StageConfig {
     static let temperatureThreshold: Float = 30
     static let humidityThreshold: Float = 70
     static let historyLimit: Int = 288
     static let alertCooldown: TimeInterval = 30
-}
+  }
 #endif
