@@ -1,6 +1,9 @@
--- Migration: Create readings table with RLS policies
--- Stage 1: Tea Warehouse Monitoring System
--- Created: 2025-12-13
+/*
+ * File: supabase/001_create_readings_table.sql
+ * Purpose: Migration to create metrics table, RLS, indexes, and realtime publication.
+ * Architecture: SQL (PostgreSQL). Schema: public. Tables: readings.
+ * AI Context: Foundation for data storage. Ensure RLS policies align with auth levels.
+ */
 
 -- Create readings table
 CREATE TABLE IF NOT EXISTS public.readings (

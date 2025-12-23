@@ -1,8 +1,8 @@
 /*
- * ESP32 DHT11 感測器資料上傳至 Supabase REST API
- * 此程式碼用於 ESP32 開發板，連接 DHT11 感測器，定期讀取溫度和濕度資料，
- * 並透過 HTTPS POST 請求將資料上傳至 Supabase 資料庫。
- * 支援 Wi-Fi 自動重連、TLS 安全連線，以及錯誤處理機制。
+ * File: esp32/arduino_stage2/arduino_stage2.ino
+ * Purpose: ESP32 firmware for reading DHT11 sensors and uploading via HTTPS.
+ * Architecture: Arduino/C++. Dependencies: ArduinoJson, DHTesp, HTTPClient.
+ * AI Context: Edge device logic. Supports DEMO_MODE for high-frequency testing.
  */
 
 #include <ArduinoJson.h>

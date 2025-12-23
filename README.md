@@ -23,6 +23,7 @@
 
 - `/update-readme`：更新本索引文件。
 - `/update-agents`：更新開發日誌與進度。
+- `/code-commenting`：檔案註釋與 Header 標準化。
 - `/evaluate-dependency`：導入第三方庫前的評估。
 
 ---

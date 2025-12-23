@@ -12,7 +12,7 @@
 
 ## 🎯 當前進度 (Done)
 
-- ✅ **Documentation Protocol**: 建立 `GEMINI.md` 並實作 AI 最佳化工作流 (`/update-readme`, `/update-agents`)。
+- ✅ **Documentation Protocol**: 建立 `GEMINI.md` 並實作 AI 最佳化工作流 (`/update-readme`, `/update-agents`, `/code-commenting`)。
 - ✅ **Stage 2 Alignment**: 更新 `README.md` 以符合 Stage 2 (Neo-Bento UI) 索引與 Human-AI Balance 原則。
 - ✅ **Stage 1 Archiving**: 所有的 MVP 相關文檔已封存至 `stage-1.md`。
 
@@ -26,6 +26,7 @@
 - **2025-12-23**: 導入 AI-Optimized Workflows。現在 AI Agent 可以透過 `.agent/workflows/` 中的標準流程來維護專案文檔。
 - **2025-12-23**: 重構 `README.md`，導入 Monorepo 映射表與對 AI 友善的 Context 索引，確保跨模組開發的一致性。
 - **2025-12-23**: 核心文檔對齊 `GEMINI.md` 規範，移除冗餘註釋，強化「代碼即文檔」的高訊息雜訊比。
+- **2025-12-23**: 執行 `/code-commenting` 工作流，完成 SQL 遷移腳本與 ESP32 韌體檔案的 Header 標準化。
 
 ## 快速起手指令 (Prompt Samples)
 
