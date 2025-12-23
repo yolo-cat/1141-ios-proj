@@ -1,14 +1,31 @@
 # iOS (SwiftUI)
 
-TeaWarehouse-MVP 的 iOS 端以 SwiftUI + MVVM 開發，串接 Supabase Realtime 與 History 圖表。請先閱讀：
-- `PRD_IOS_STAGE_1.md`：Stage 1 需求摘錄（完整需求見 `../PRD_STAGE1.md`）
-- `AGENTS.md`：Stage-1 專屬開發指引
-- `DESIGN_IOS_STAGE_1.md`：設計概要
-- `TASKS_IOS_STAGE_1.md`：依指引拆解的落地步驟
-- `TEST_IOS_STAGE1.md`：Stage 1 測試計畫、TDD 流程與完成度檢查；XCTest 骨架位於 `test/stage_1/`
+TeaWarehouse-MVP 的 iOS 端以 SwiftUI + MVVM 開發，串接 Supabase Realtime。專案已進入 **Stage 2**：功能擴展與細化。
 
-## 代碼骨架 (Stage 1)
-- App 入口與 SwiftUI 結構：`App/TeaWarehouseApp.swift`、`App/Views/RootView.swift`
-- 模組化目錄：`App/Models/`、`App/Managers/`、`App/ViewModels/`、`App/Views/`
-- Supabase 介接：`App/Managers/SupabaseManager.swift`（stub，可替換為 supabase-swift）
-- MVVM：`AuthViewModel`、`SensorViewModel`，對應 `LoginView`、`DashboardView`、`HistoryChartView`
+## 相關文件
+
+- `AGENTS.md`：Stage 2 開發指引與目標 (**當前開發重點**)
+- `Doc/stage-2-view/STAGE_2_IOS_DashboardView.md`：Stage 2 儀表板設計規格
+- `Doc/stage-1_ios.md`：Stage 1 需求、設計與測試完整記錄（歷史資料）
+
+## 代碼骨架 (Stage 2)
+
+- **App 入口**：`App/TeaWarehouseApp.swift`
+- **主要視圖**：
+  - `DashboardView.swift`：採用 Bento Grid 佈局，整合即時數據、警示與滑動式分析卡片。
+  - `LoginView.swift`：認證界面。
+- **架構**：MVVM (Model-View-ViewModel) + Observation 框架。
+- **測試**：`test/` 目錄，包含單元測試與整合測試
+
+## Stage 2 主要目標
+
+1. 完善導航與多視圖路由
+2. 實施本地數據持久化與緩存
+3. 優化 UI 動態效果與自定義視圖
+4. 增強通知系統與閾值管理
+5. **Google OAuth 整合**：支援原生 Google 登入 (Web Flow)。
+
+---
+
+> [!IMPORTANT]
+> **維護要求**：當有任何代碼修改時，必須自動且同步地更新 `README.md` 與 `AGENTS.md` 中的對應內容，以確保文檔與代碼高度一致。

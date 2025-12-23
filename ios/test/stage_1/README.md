@@ -3,10 +3,12 @@
 此資料夾存放 Stage 1 的 XCTest 測試樣板，對應 `ios/TEST_IOS_STAGE1.md`。將檔案加入 Xcode test target 後，可依 TDD 逐項實作。
 
 ## 結構
+
 - `AuthViewModelTests.swift`：登入/註冊、session 保存
-- `SensorViewModelTests.swift`：Realtime 訂閱、歷史查詢、超標提醒
+- `DashboardViewModelTests.swift`：Realtime 訂閱、歷史查詢、超標提醒
 
 ## 執行方式（建議）
+
 1. 在專案中新增 Test Target，將本資料夾加入。
 2. 提供 `SupabaseManaging` mock（或以測試環境 URL/Key）以避免真實網路存取。
 3. 依 `TEST_IOS_STAGE1.md` 的案例順序移除 `XCTSkip` 並填寫 Arrange/Act/Assert。

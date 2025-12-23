@@ -1,17 +1,32 @@
-/// 2025-12-13: 改用 Observation 注入 AuthViewModel 並新增版本註釋。
+/*
+ * File: TeaWarehouseApp.swift
+ * Purpose: Main application entry point and dependency injection root.
+ * Architecture: SwiftUI App structure using @Observation for state management.
+ * AI Context: Root of the view hierarchy. Injects global view models.
+ */
 #if canImport(SwiftUI)
-import SwiftUI
-import Observation
+  import SwiftUI
+  import Observation
 
-@main
-struct TeaWarehouseApp: App {
+  @main
+  struct TeaWarehouseApp: App {
     @State private var authViewModel = AuthViewModel()
+    @State private var sensorViewModel = DashboardViewModel.makeDefault()
 
     var body: some Scene {
-        WindowGroup {
-            RootView()
-                .environment(authViewModel)
+      WindowGroup {
+        Group {
+          if authViewModel.sessionToken == nil {
+            LoginView()
+          } else {
+            DashboardView(viewModel: sensorViewModel)
+          }
         }
+        .environment(authViewModel)
+        .onOpenURL { url in
+          authViewModel.handle(url: url)
+        }
+      }
     }
-}
+  }
 #endif
