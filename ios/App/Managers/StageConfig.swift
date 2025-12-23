@@ -7,6 +7,7 @@
 #if canImport(Foundation)
   import Foundation
 
+  @MainActor
   enum StageConfig {
     static let temperatureThreshold: Float = 30
     static let humidityThreshold: Float = 70

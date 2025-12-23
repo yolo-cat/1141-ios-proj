@@ -90,6 +90,8 @@
           .font(DesignSystem.Typography.header)
           .foregroundColor(DesignSystem.Colors.textSecondary)
           .opacity(0.8)
+          .lineLimit(1)
+          .minimumScaleFactor(0.7)
 
         Spacer()
 

@@ -34,6 +34,7 @@
     func currentUserEmail() async throws -> String?
   }
 
+  @MainActor
   final class SupabaseManager: SupabaseManaging {
     static let shared = SupabaseManager()
     static let defaultRedirectURL = "ZZT.ios://auth/callback"
@@ -144,7 +145,7 @@
 
     func handle(_ url: URL) async throws {
       print("🔗 [SupabaseManager] handle(url) called with: \(url.absoluteString)")
-      try await supabase.handle(url)
+      await supabase.handle(url)
 
       // Update local session token after successful handling
       if let session = try? await supabase.auth.session {
@@ -173,7 +174,8 @@
     }
 
     func fetchHistory(limit: Int) async throws -> [Reading] {
-      let response = try await supabase.database
+      let response =
+        try await supabase
         .from("readings")
         .select()
         .order("created_at", ascending: false)
@@ -257,7 +259,7 @@
       }
 
       Task {
-        await channel.subscribe()
+        try? await channel.subscribe()
       }
     }
 
